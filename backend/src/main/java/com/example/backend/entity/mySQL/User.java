@@ -1,5 +1,7 @@
 package com.example.backend.entity.mySQL;
 
+import com.example.backend.Enum.UserRole;
+import com.example.backend.Enum.UserStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -22,14 +24,18 @@ public class User {
     private String email;
     private String password;
     private String bio;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
     @Lob
-    @Column(columnDefinition = "LONGBLOB", nullable = false)
+    @Column(columnDefinition = "LONGBLOB")
     private byte[] avatar;
     @Lob
-    @Column(name = "background_image", columnDefinition = "LONGBLOB", nullable = false)
+    @Column(name = "background_image", columnDefinition = "LONGBLOB")
     private byte[] backgroundImage;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "create_time", nullable = false)
+    @Column(name = "create_time")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -86,4 +92,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NotificationUser> notificationUsers;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Token> tokens;
 }
