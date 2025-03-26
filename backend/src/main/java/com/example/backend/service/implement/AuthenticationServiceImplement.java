@@ -89,7 +89,8 @@ public class AuthenticationServiceImplement implements AuthenticationService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
-        return new AuthenticationResponse(accessToken, refreshToken, "Login successfully!");
+        saveUserToken(accessToken, refreshToken,userDetails);
+        return new AuthenticationResponse(accessToken, refreshToken, "Signup successfully!");
     }
 
     @Override
