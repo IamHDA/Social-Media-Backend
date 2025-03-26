@@ -10,7 +10,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 
 @Component
-public class customLogoutHandler implements LogoutHandler {
+public class CustomLogoutHandler implements LogoutHandler {
 
     @Autowired
     private TokenRepository tokenRepo;
