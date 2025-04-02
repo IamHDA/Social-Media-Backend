@@ -45,13 +45,14 @@ public class AuthenticationServiceImplement implements AuthenticationService {
 
     @Override
     public AuthenticationResponse login(LogIn request) {
-        if(userRepo.findByEmail(request.getEmail()).isEmpty()){
-            return new AuthenticationResponse(null, null, "User not found!");
+        User user = userRepo.findByEmail(request.getEmail()).orElse(null);
+        if(user == null){
+            return new AuthenticationResponse(null, null, null, null,"User not found!");
         }
         try{
             authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         }catch(BadCredentialsException e){
-            return new AuthenticationResponse(null, null, "Wrong password!");
+            return new AuthenticationResponse(null, null, null , null,"Wrong password!");
         }
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
@@ -63,13 +64,13 @@ public class AuthenticationServiceImplement implements AuthenticationService {
             });
         }
         saveUserToken(accessToken,refreshToken,userDetails);
-        return new AuthenticationResponse(accessToken, refreshToken, "User login successfully!");
+        return new AuthenticationResponse(accessToken, refreshToken, user.getId(), user.getUsername(), "User login successfully!");
     }
 
     @Override
     public AuthenticationResponse register(Register request) {
         if(userRepo.findByEmail(request.getEmail()).isPresent()){
-            return new AuthenticationResponse(null, null, "User already exists!");
+            return new AuthenticationResponse(null, null, null, null,"User already exists!");
         }
         User user = new User();
         user.setEmail(request.getEmail());
@@ -86,11 +87,12 @@ public class AuthenticationServiceImplement implements AuthenticationService {
             throw new RuntimeException("Failed here");
         }
         userRepo.save(user);
+        User currentUser = userRepo.findByEmail(request.getEmail()).orElse(null);
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
         saveUserToken(accessToken, refreshToken,userDetails);
-        return new AuthenticationResponse(accessToken, refreshToken, "Signup successfully!");
+        return new AuthenticationResponse(accessToken, refreshToken, currentUser.getId(), currentUser.getUsername(), "Signup successfully!");
     }
 
     @Override
@@ -101,16 +103,12 @@ public class AuthenticationServiceImplement implements AuthenticationService {
         }
         String token = authHeader.substring(7);
         String email = jwtTokenProvider.extractUserEmail(token);
-        User user = userRepo.findByEmail(email).orElse(null);
-        if(user == null){
-            return new ResponseEntity(new AuthenticationResponse(null, null, "Account not found!"), HttpStatus.UNAUTHORIZED);
-        }
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         if(jwtTokenProvider.isValidRefreshToken(token, userDetails)){
             String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
             String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
             saveUserToken(accessToken,refreshToken,userDetails);
-            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken, "New Token generated"), HttpStatus.OK);
+            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken, null, null, "New Token generated"), HttpStatus.OK);
         }
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }

@@ -94,5 +94,6 @@ public class User {
     private List<NotificationUser> notificationUsers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Token> tokens;
 }
