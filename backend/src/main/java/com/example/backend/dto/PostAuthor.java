@@ -6,4 +6,5 @@ import lombok.Data;
 public class PostAuthor {
     private long id;
     private String name;
+    private byte[] avatar;
 }

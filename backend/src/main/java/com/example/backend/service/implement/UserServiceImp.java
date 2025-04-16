@@ -1,11 +1,15 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.Enum.UserStatus;
 import com.example.backend.dto.UserProfile;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,5 +45,16 @@ public class UserServiceImp implements UserService {
         return "Change Background Image Successfully!";
     }
 
+    @Override
+    public User getCurrentUser() {
+        String username = "";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(!(authentication instanceof AnonymousAuthenticationToken)){
+            username = authentication.getName();
+        }
+        User currentUser = userRepo.findByUsername(username);
+        currentUser.setStatus(UserStatus.ONLINE);
+        return userRepo.save(currentUser);
+    }
 
 }
