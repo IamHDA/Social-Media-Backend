@@ -1,13 +1,10 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.UserProfile;
-import com.example.backend.dto.payload.CurrentUser;
-import com.example.backend.entity.mySQL.User;
-import com.example.backend.repository.mySQL.UserRepository;
+import com.example.backend.dto.CurrentUser;
 import com.example.backend.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
