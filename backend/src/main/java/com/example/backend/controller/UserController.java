@@ -28,7 +28,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserProfile(id));
     }
 
-    @PostMapping("/currentUser")
+    @GetMapping("/currentUser")
     public ResponseEntity<CurrentUser> getCurrentUser(){
         return ResponseEntity.ok(modelMapper.map(userService.getCurrentUser(), CurrentUser.class));
     }
