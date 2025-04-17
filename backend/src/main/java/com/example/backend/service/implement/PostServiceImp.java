@@ -11,6 +11,7 @@ import com.example.backend.repository.mongoDB.PostMediaRepository;
 import com.example.backend.repository.mySQL.PostRepository;
 import com.example.backend.service.PostService;
 import com.example.backend.service.UserService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +63,14 @@ public class PostServiceImp implements PostService {
         Post tmp = postRepo.save(post);
         uploadPostMedia(files, tmp.getId());
         return "Post created successfully";
+    }
+
+    @Override
+    @Transactional
+    public String deletePost(long postId){
+        postRepo.deleteById(postId);
+        postMediaRepo.deleteByPostId(postId);
+        return "Deleted post successfully";
     }
 
     public List<PostDTO> convertPostsToDTO(List<Post> posts) {

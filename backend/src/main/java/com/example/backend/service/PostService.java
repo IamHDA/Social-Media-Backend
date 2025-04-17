@@ -11,4 +11,5 @@ public interface PostService {
     List<PostDTO> getNewestPost();
     void uploadPostMedia(List<MultipartFile> files, long postId) throws IOException;
     String createPersonalPost(List<MultipartFile> files, PostCreate postCreate) throws IOException;
+    String deletePost(long postId);
 }

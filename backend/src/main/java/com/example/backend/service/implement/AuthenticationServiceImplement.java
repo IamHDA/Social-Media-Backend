@@ -64,18 +64,18 @@ public class AuthenticationServiceImplement implements AuthenticationService {
             });
         }
         saveUserToken(accessToken,refreshToken,userDetails);
-        return new AuthenticationResponse(accessToken, refreshToken, user.getId(), user.getUsername(), "User login successfully!");
+        return new AuthenticationResponse(accessToken, refreshToken, "User login successfully!");
     }
 
     @Override
     public AuthenticationResponse register(Register request) {
         if(userRepo.findByEmail(request.getEmail()).isPresent()){
-            return new AuthenticationResponse(null, null, null, null,"User already exists!");
+            return new AuthenticationResponse(null, null, "User already exists!");
         }
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(new BCryptPasswordEncoder(12).encode(request.getPassword()));
-        user.setUsername(request.getUsername());
+        user.setUsername(request.getUserName());
         user.setStatus(UserStatus.ONLINE);
         user.setRole(UserRole.USER);
         try {
@@ -87,12 +87,11 @@ public class AuthenticationServiceImplement implements AuthenticationService {
             throw new RuntimeException("Failed here");
         }
         userRepo.save(user);
-        User currentUser = userRepo.findByEmail(request.getEmail()).orElse(null);
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
         saveUserToken(accessToken, refreshToken,userDetails);
-        return new AuthenticationResponse(accessToken, refreshToken, currentUser.getId(), currentUser.getUsername(), "Signup successfully!");
+        return new AuthenticationResponse(accessToken, refreshToken, "Signup successfully!");
     }
 
     @Override
@@ -108,7 +107,7 @@ public class AuthenticationServiceImplement implements AuthenticationService {
             String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
             String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
             saveUserToken(accessToken,refreshToken,userDetails);
-            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken, null, null, "New Token generated"), HttpStatus.OK);
+            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken, "New Token generated"), HttpStatus.OK);
         }
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }

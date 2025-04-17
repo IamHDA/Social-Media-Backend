@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface PostMediaRepository extends MongoRepository<PostMedia,String> {
     List<PostMediaDTO> findByPostId(Long id);
+    void deleteByPostId(long postId);
 }
