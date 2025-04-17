@@ -47,12 +47,12 @@ public class AuthenticationServiceImplement implements AuthenticationService {
     public AuthenticationResponse login(LogIn request) {
         User user = userRepo.findByEmail(request.getEmail()).orElse(null);
         if(user == null){
-            return new AuthenticationResponse(null, null, null, null,"User not found!");
+            return new AuthenticationResponse(null, null, "User not found!");
         }
         try{
             authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         }catch(BadCredentialsException e){
-            return new AuthenticationResponse(null, null, null , null,"Wrong password!");
+            return new AuthenticationResponse( null , null,"Wrong password!");
         }
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
