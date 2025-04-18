@@ -20,7 +20,7 @@ public class UserController {
     @Autowired
     private ModelMapper modelMapper;
 
-    @GetMapping("/userProfile/{id}")
+    @GetMapping("/profile/{id}")
     public ResponseEntity<UserProfile> getUser(@PathVariable long id) {
         return ResponseEntity.ok(userService.getUserProfile(id));
     }
@@ -30,13 +30,13 @@ public class UserController {
         return ResponseEntity.ok(modelMapper.map(userService.getCurrentUser(), CurrentUser.class));
     }
 
-    @PutMapping("/userProfile/update/avatar")
-    public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file, @RequestParam("userId") long userId) throws IOException {
-        return ResponseEntity.ok(userService.updateUserAvatar(file, userId));
+    @PutMapping("/profile/update/avatar")
+    public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(userService.updateUserAvatar(file));
     }
 
-    @PutMapping("/userProfile/update/backgroundImage")
-    public ResponseEntity<String> updateBackgroundImage(@RequestParam("file") MultipartFile file, @RequestParam("userId") long userId) throws IOException {
-        return ResponseEntity.ok(userService.updateUserBackgroundImage(file, userId));
+    @PutMapping("/profile/update/backgroundImage")
+    public ResponseEntity<String> updateBackgroundImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(userService.updateUserBackgroundImage(file));
     }
 }

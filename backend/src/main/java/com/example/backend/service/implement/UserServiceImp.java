@@ -30,16 +30,16 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public String updateUserAvatar(MultipartFile file, long userId) throws IOException {
-        User user = userRepo.findById(userId);
+    public String updateUserAvatar(MultipartFile file) throws IOException {
+        User user = getCurrentUser();
         user.setAvatar(file.getBytes());
         userRepo.save(user);
         return "Change Avatar Successfully!";
     }
-
+ 
     @Override
-    public String updateUserBackgroundImage(MultipartFile file, long userId) throws IOException {
-        User user = userRepo.findById(userId);
+    public String updateUserBackgroundImage(MultipartFile file) throws IOException {
+        User user = getCurrentUser();
         user.setBackgroundImage(file.getBytes());
         userRepo.save(user);
         return "Change Background Image Successfully!";
@@ -47,12 +47,12 @@ public class UserServiceImp implements UserService {
 
     @Override
     public User getCurrentUser() {
-        String username = "";
+        String email = "";
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(!(authentication instanceof AnonymousAuthenticationToken)){
-            username = authentication.getName();
+            email = authentication.getName();
         }
-        User currentUser = userRepo.findByUsername(username);
+        User currentUser = userRepo.findByEmail(email).orElse(null);
         currentUser.setStatus(UserStatus.ONLINE);
         return userRepo.save(currentUser);
     }

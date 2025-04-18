@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public interface UserService {
     UserProfile getUserProfile(long id);
-    String updateUserAvatar(MultipartFile file, long userId) throws IOException;
-    String updateUserBackgroundImage(MultipartFile file, long userId) throws IOException;
+    String updateUserAvatar(MultipartFile file) throws IOException;
+    String updateUserBackgroundImage(MultipartFile file) throws IOException;
     User getCurrentUser();
 }
