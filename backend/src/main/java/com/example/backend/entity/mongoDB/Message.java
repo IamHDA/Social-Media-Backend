@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class Message {
     @Id
     private String id;
+    private String chatId;
     private long conversationId;
     private long senderId;
     private String content;
