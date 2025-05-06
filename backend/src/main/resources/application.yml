@@ -21,6 +21,7 @@ spring:
       static-locations:
         - "file:///C:/Social-Media-Backend/media/post_media/"
         - "file:///C:/Social-Media-Backend/media/message_media/"
+        - "file:///C:/Social-Media-Backend/media/comment_media/"
       cache:
         period: 0
 

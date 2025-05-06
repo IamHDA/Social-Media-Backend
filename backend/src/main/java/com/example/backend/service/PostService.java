@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface PostService {
     List<PostDTO> getNewestPost();
-    String createPersonalPost(List<MultipartFile> files, PostCreate postCreate, MultipartFile file) throws IOException;
+    String createPersonalPost(List<MultipartFile> files, String content, MultipartFile file);
     String deletePost(long postId);
+
+    List<PostDTO> getPostsByUser(long userId);
 }

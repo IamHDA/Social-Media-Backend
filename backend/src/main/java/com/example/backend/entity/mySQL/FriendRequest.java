@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class FriendRequest {
     @EmbeddedId
     private FriendRequestId id;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "request_time")
     private LocalDateTime requestTime;
@@ -26,4 +27,11 @@ public class FriendRequest {
     @ManyToOne
     @JoinColumn(name = "user2_id", nullable = false)
     private User user2;
+
+    public FriendRequest(User user1, User user2) {
+        this.user1 = user1;
+        this.user2 = user2;
+        this.requestTime = LocalDateTime.now();
+        this.id = new FriendRequestId(user1.getId(), user2.getId());
+    }
 }

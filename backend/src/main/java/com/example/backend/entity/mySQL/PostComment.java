@@ -19,6 +19,8 @@ public class PostComment {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "comment_time")
     private LocalDateTime commentedAt;
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
