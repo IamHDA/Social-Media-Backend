@@ -15,7 +15,7 @@ public class FriendRequest {
     private FriendRequestId id;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "request_time")
-    private LocalDateTime requestTime = LocalDateTime.now();
+    private LocalDateTime requestTime;
 
     @MapsId("user1")
     @ManyToOne

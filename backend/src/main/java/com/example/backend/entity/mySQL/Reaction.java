@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class Reaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
     @Enumerated(EnumType.STRING)
     @Column(name = "reference_type")
     private ReferenceType referenceType;
@@ -22,7 +22,7 @@ public class Reaction {
     private Emotion emotion;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "react_time")
-    private LocalDateTime reactAt = LocalDateTime.now();
+    private LocalDateTime reactAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

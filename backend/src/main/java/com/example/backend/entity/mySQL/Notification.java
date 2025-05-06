@@ -17,14 +17,15 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String content;
     @Enumerated(EnumType.STRING)
     private NotificationType type;
     @Column(name = "is_read")
-    private boolean isRead = false;
+    private boolean isRead;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "notice_time")
-    private LocalDateTime noticeAt = LocalDateTime.now();
+    private LocalDateTime noticeAt;
 
     @Column(name = "message_id")
     private String messageId;

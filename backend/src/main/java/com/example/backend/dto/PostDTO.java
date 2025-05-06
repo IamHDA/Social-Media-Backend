@@ -1,6 +1,8 @@
 package com.example.backend.dto;
 
+import com.example.backend.Enum.Emotion;
 import com.example.backend.entity.mongoDB.PostMedia;
+import com.example.backend.entity.mySQL.Reaction;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -17,5 +19,6 @@ public class PostDTO {
     @JsonFormat(pattern = "dd/MM/yy HH:mm")
     private LocalDateTime updatedAt;
     private PostAuthor author;
+    private List<Emotion> emotions;
     private List<PostReactionSummary> reactionsDto;
 }

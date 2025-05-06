@@ -25,7 +25,7 @@ public class PostController {
 
 
     @PostMapping("/createPersonal")
-    public ResponseEntity<String> createPersonalPost(@RequestPart(name = "files") List<MultipartFile> files, @RequestPart(name = "post")PostCreate postCreate) throws IOException {
-        return ResponseEntity.ok(postService.createPersonalPost(files, postCreate));
+    public ResponseEntity<String> createPersonalPost(@RequestPart(name = "files") List<MultipartFile> files, @RequestPart(name = "post")PostCreate postCreate, @RequestPart(name = "postBackground") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(postService.createPersonalPost(files, postCreate, file));
     }
 }

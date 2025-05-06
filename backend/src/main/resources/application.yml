@@ -3,9 +3,9 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:mysql://localhost:3306/Mini_Social_Media
+    url: jdbc:mysql://localhost:3306/mini_social_media?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci
     username: root
-    password: Duyanh2004@
+    password: Duyanh090@
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       pool-name: HikariCP
@@ -16,10 +16,13 @@ spring:
       connection-timeout: 30000
       connection-test-query: SELECT 1
 
-  security:
-    user:
-      name: admin
-      password: 123456
+  web:
+    resources:
+      static-locations:
+        - "file:///C:/Social-Media-Backend/media/post_media/"
+        - "file:///C:/Social-Media-Backend/media/message_media/"
+      cache:
+        period: 0
 
   jpa:
     hibernate:
@@ -27,9 +30,10 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/room_renting
-      database: room_renting
+      uri: mongodb://localhost:27017/mini_social_media
+      database: mini_social_media
       auto-index-creation: true
+
   servlet:
     multipart:
       enabled: true

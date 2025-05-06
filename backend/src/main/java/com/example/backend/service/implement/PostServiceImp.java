@@ -9,6 +9,8 @@ import com.example.backend.entity.mongoDB.PostMedia;
 import com.example.backend.entity.mySQL.Post;
 import com.example.backend.repository.mongoDB.PostMediaRepository;
 import com.example.backend.repository.mySQL.PostRepository;
+import com.example.backend.repository.mySQL.ReactionRepository;
+import com.example.backend.service.MediaService;
 import com.example.backend.service.PostService;
 import com.example.backend.service.UserService;
 import jakarta.transaction.Transactional;
@@ -33,6 +35,10 @@ public class PostServiceImp implements PostService {
     private ModelMapper modelMapper;
     @Autowired
     private UserService userService;
+    @Autowired
+    private MediaService mediaService;
+    @Autowired
+    private ReactionRepository reactionRepo;
 
     @Override
     public List<PostDTO> getNewestPost() {
@@ -40,28 +46,13 @@ public class PostServiceImp implements PostService {
     }
 
     @Override
-    public void uploadPostMedia(List<MultipartFile> files, long postId) throws IOException {
-        for(MultipartFile file : files){
-            String url = "http://localhost:8080/PostMedia/";
-            String mediaUrl = url + file.getOriginalFilename();
-            String tmp = file.getContentType().split("/")[0];
-            MediaType type = MediaType.valueOf(tmp.toUpperCase());
-            postMediaRepo.save(PostMedia.builder()
-                    .mediaType(type)
-                    .url(mediaUrl)
-                    .postId(postId)
-                    .build());
-            file.transferTo(new File("/home/iamhda/ETC/Room-Renting/backend/src/main/resources/static/PostMedia/" + file.getOriginalFilename()));
-        }
-    }
-
-    @Override
-    public String createPersonalPost(List<MultipartFile> files, PostCreate postCreate) throws IOException {
+    public String createPersonalPost(List<MultipartFile> files, PostCreate postCreate, MultipartFile file) throws IOException {
         Post post = modelMapper.map(postCreate, Post.class);
         post.setUser(userService.getCurrentUser());
         post.setCreatedAt(LocalDateTime.now());
+        post.setBackgroundUrl(mediaService.uploadPostBackground(file));
         Post tmp = postRepo.save(post);
-        uploadPostMedia(files, tmp.getId());
+        mediaService.uploadPostMedia(files, tmp.getId());
         return "Post created successfully";
     }
 
@@ -88,6 +79,7 @@ public class PostServiceImp implements PostService {
                             .toList();
                     postDTO.setPostMediaList(postMediaRepo.findByPostId(post.getId()));
                     postDTO.setAuthor(author);
+                    postDTO.setEmotions(reactionRepo.getDistinctEmotionByPost(post));
                     postDTO.setReactionsDto(postReactionSummaryList);
                     return postDTO;
                 })

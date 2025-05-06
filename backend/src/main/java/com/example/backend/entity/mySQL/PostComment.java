@@ -14,10 +14,11 @@ public class PostComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String content;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "comment_time")
-    private LocalDateTime commentedAt = LocalDateTime.now();
+    private LocalDateTime commentedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

@@ -16,10 +16,11 @@ public class PostMediaComment {
     private Long id;
     @Column(name = "media_id")
     private String mediaId;
+    @Column(columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String content;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "comment_time")
-    private LocalDateTime commentedAt = LocalDateTime.now();
+    private LocalDateTime commentedAt;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostMediaComment> parentComments;
