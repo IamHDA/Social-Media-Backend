@@ -9,6 +9,4 @@ public interface CommunityService {
     long createCommunity(CreateCommunity communityData);
 
     List<CommunityProfile> getCommunityByUser(long userId);
-
-    void sendRequest(long userId, long communityId);
 }

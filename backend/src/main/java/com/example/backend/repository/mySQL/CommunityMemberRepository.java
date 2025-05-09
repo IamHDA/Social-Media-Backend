@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface CommunityMemberRepository  extends JpaRepository<CommunityMember, Long> {
     List<CommunityMember> findByUser_Id(long userId);
+
+    void deleteByUser_IdAndCommunity_Id(long userId, long communityId);
 }

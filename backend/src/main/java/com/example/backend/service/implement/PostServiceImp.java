@@ -65,7 +65,7 @@ public class PostServiceImp implements PostService {
         notification.setUser(user);
         notification.setType(NotificationType.POST);
         notification.setContent(user.getUsername() + " Đã tạo 1 bài viết mới: " + content);
-        notificationService.sendNotification(notification, user);
+        notificationService.sendNotificationForFriends(notification, user);
         return "Post created successfully";
     }
 

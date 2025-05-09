@@ -25,10 +25,4 @@ public class CommunityController {
     public ResponseEntity<Long> createCommunity(@RequestBody CreateCommunity data) {
         return ResponseEntity.ok(communityService.createCommunity(data));
     }
-
-    @PostMapping("/sendRequest")
-    public ResponseEntity<Void> sendRequest(@RequestParam("userId") long userId, @RequestParam("communityId") long communityId) {
-        communityService.sendRequest(userId, communityId);
-        return ResponseEntity.ok().build();
-    }
 }

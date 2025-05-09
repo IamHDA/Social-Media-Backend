@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.entity.mySQL.Community;
 import com.example.backend.entity.mySQL.Notification;
 import com.example.backend.entity.mySQL.NotificationUser;
 import com.example.backend.entity.mySQL.User;
@@ -9,6 +10,7 @@ import com.example.backend.repository.mySQL.NotificationUserRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.NotificationService;
 import com.example.backend.service.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +26,30 @@ public class NotificationServiceImp implements NotificationService {
     @Autowired
     private NotificationUserRepository notificationUserRepo;
     @Autowired
-    private UserService userService;
+    private ModelMapper modelMapper;
 
     @Override
-    public void sendNotification(Notification notification, User user) {
+    public void sendNotificationForFriends(Notification notification, User user) {
         List<User> friends = friendshipRepo.findFriendsByUser(user.getId());
         notification.setNoticeAt(LocalDateTime.now());
         notification.setRead(false);
         notificationRepo.save(notification);
         for(User friend : friends) {
             notificationUserRepo.save(new NotificationUser(friend, notification));
+        }
+    }
+
+    @Override
+    public void sendNotificationToCommunityMember(Notification notification, Community community, User user){
+        notification.setNoticeAt(LocalDateTime.now());
+        notification.setRead(false);
+        notificationRepo.save(notification);
+        List<User> members = community.getMembers()
+                .stream()
+                .map(member -> modelMapper.map(member, User.class))
+                .toList();
+        for(User member : members) {
+            notificationUserRepo.save(new NotificationUser(member, notification));
         }
     }
 

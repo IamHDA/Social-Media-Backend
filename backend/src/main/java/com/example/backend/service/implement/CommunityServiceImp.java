@@ -67,11 +67,4 @@ public class CommunityServiceImp implements CommunityService {
                 })
                 .toList();
     }
-
-    @Override
-    public void sendRequest(long userId, long communityId) {
-        User user = userRepo.findById(userId);
-        Community community = communityRepo.findById(communityId).orElse(null);
-        communityRequestRepo.save(new CommunityRequest(user, community));
-    }
 }
