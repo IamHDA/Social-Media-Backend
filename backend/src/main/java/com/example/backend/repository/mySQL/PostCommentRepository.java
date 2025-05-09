@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CommentRepository extends JpaRepository<PostComment, Long> {
+public interface PostCommentRepository extends JpaRepository<PostComment, Long> {
     Optional<List<PostComment>> findByParent_Id(long commentId);
     List<PostComment> findByPost_Id(long postId);
 

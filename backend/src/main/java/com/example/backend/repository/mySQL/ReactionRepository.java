@@ -4,6 +4,7 @@ import com.example.backend.Enum.Emotion;
 import com.example.backend.entity.mySQL.Post;
 import com.example.backend.entity.mySQL.PostComment;
 import com.example.backend.entity.mySQL.Reaction;
+import com.example.backend.entity.mySQL.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +21,7 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     group by r.emotion
     order by count(r.emotion) desc
 """)
-    List<Emotion> getEmotionByPost(@Param("post") Post post);
+    List<Emotion> getEmotionsByPost(@Param("post") Post post);
 
     @Query("""
     select r.emotion
@@ -29,7 +30,7 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     group by r.emotion
     order by count(r.emotion) desc
 """)
-    List<Emotion> getEmotionByComment(@Param("comment") PostComment comment);
+    List<Emotion> getEmotionsByComment(@Param("comment") PostComment comment);
 
     @Query("""
     select count(r)
@@ -44,4 +45,6 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     where r.postComment = :comment
 """)
     Integer countReactionsByComment(@Param("comment")PostComment comment);
+
+    Reaction findReactionByUserAndPost(User user, Post post);
 }

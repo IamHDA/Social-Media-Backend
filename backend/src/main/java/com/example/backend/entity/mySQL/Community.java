@@ -34,4 +34,7 @@ public class Community {
 
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostCommunity> postCommunities;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommunityRequest> communityRequests;
 }

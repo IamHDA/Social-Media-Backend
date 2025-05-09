@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CommentService {
     CommentDTO createPostComment(MultipartFile image, String content, long postId);
-
+    CommentDTO createCommentResponse(long commentId, MultipartFile image, String content);
     List<CommentDTO> getCommentResponse(long commentId);
 
     List<CommentDTO> getCommentsOfPost(long postId);

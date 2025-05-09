@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.FriendRequestDTO;
 import com.example.backend.service.FriendService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +18,17 @@ public class FriendController {
     }
 
     @GetMapping("/checkFriendRequest/{opponentId}")
-    public ResponseEntity<Boolean> checkFriendRequest(@PathVariable int opponentId) {
-        return ResponseEntity.ok(friendService.isRequestExist(opponentId));
+    public ResponseEntity<FriendRequestDTO> getFriendRequest(@PathVariable int opponentId) {
+        return ResponseEntity.ok(friendService.getFriendRequest(opponentId));
     }
 
-    @PostMapping("/sendRequest")
-    public ResponseEntity<String> sendFriendRequest(long recipientId){
+    @PostMapping("/sendRequest/{recipientId}")
+    public ResponseEntity<String> sendFriendRequest(@PathVariable long recipientId){
         return ResponseEntity.ok(friendService.sendFriendRequest(recipientId));
     }
 
-    @PostMapping("/acceptRequest")
-    public ResponseEntity<String> acceptFriendRequest(long senderId){
+    @PostMapping("/acceptRequest/{senderId}")
+    public ResponseEntity<String> acceptFriendRequest(@PathVariable long senderId){
         return ResponseEntity.ok(friendService.acceptFriendRequest(senderId));
     }
 }

@@ -5,5 +5,6 @@ public enum NotificationType {
     COMMENT,
     MEDIA_COMMENT,
     MESSAGE,
-    FRIEND_REQUEST
+    FRIEND_REQUEST,
+    JOIN_REQUEST
 }

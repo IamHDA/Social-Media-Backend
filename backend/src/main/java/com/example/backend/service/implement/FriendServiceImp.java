@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.dto.FriendRequestDTO;
 import com.example.backend.entity.mySQL.FriendRequest;
 import com.example.backend.entity.mySQL.Friendship;
 import com.example.backend.entity.mySQL.User;
@@ -66,8 +67,12 @@ public class FriendServiceImp implements FriendService {
     }
 
     @Override
-    public boolean isRequestExist(long opponentId){
+    public FriendRequestDTO getFriendRequest(long opponentId){
         User currentUser = userService.getCurrentUser();
-        return friendRequestRepo.findExistRequestByUser1IdAndUser2Id(currentUser.getId(), opponentId).isPresent();
+        FriendRequest friendRequest = friendRequestRepo.findExistRequestByUser1IdAndUser2Id(currentUser.getId(), opponentId);
+        return FriendRequestDTO.builder()
+                .senderId(friendRequest.getUser1().getId())
+                .recipientId(friendRequest.getUser2().getId())
+                .build();
     }
 }

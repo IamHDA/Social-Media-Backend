@@ -18,5 +18,6 @@ public class PostDTO {
     private LocalDateTime updatedAt;
     private UserSummary userSummary;
     private ReactionSummary reactionSummary;
+    private ReactionDTO currentUserReaction;
     private List<PostReactionSummary> reactionsDto;
 }

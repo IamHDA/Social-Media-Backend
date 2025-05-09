@@ -1,10 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
-import com.example.backend.dto.ReactionSummary;
-import com.example.backend.dto.UserSummary;
-import com.example.backend.dto.PostDTO;
-import com.example.backend.dto.PostReactionSummary;
+import com.example.backend.dto.*;
 import com.example.backend.entity.mySQL.Notification;
 import com.example.backend.entity.mySQL.Post;
 import com.example.backend.entity.mySQL.User;
@@ -101,9 +98,10 @@ public class PostServiceImp implements PostService {
                     postDTO.setPostMediaList(postMediaRepo.findByPostId(post.getId()));
                     postDTO.setUserSummary(userSummary);
                     postDTO.setReactionSummary(ReactionSummary.builder()
-                                    .emotions(reactionRepo.getEmotionByPost(post))
+                                    .emotions(reactionRepo.getEmotionsByPost(post))
                                     .total(reactionRepo.countReactionsByPost(post))
                             .build());
+                    postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));
                     postDTO.setReactionsDto(postReactionSummaryList);
                     return postDTO;
                 })

@@ -6,4 +6,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface ReactionService {
     String addReaction(ReactionDTO reactionDTO);
+
+    void deleteReaction(Long reactionId);
 }

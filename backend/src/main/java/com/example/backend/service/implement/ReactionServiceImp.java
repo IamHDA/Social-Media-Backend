@@ -3,10 +3,8 @@ package com.example.backend.service.implement;
 import com.example.backend.Enum.Emotion;
 import com.example.backend.Enum.ReferenceType;
 import com.example.backend.dto.payload.ReactionDTO;
-import com.example.backend.entity.mongoDB.PostMedia;
 import com.example.backend.entity.mySQL.*;
-import com.example.backend.repository.mongoDB.PostMediaRepository;
-import com.example.backend.repository.mySQL.CommentRepository;
+import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;
 import com.example.backend.repository.mySQL.PostRepository;
 import com.example.backend.repository.mySQL.ReactionRepository;
@@ -16,7 +14,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.print.attribute.standard.Media;
 import java.time.LocalDateTime;
 
 @Service
@@ -30,7 +27,7 @@ public class ReactionServiceImp implements ReactionService {
     @Autowired
     private UserService userService;
     @Autowired
-    private CommentRepository commentRepo;
+    private PostCommentRepository commentRepo;
     @Autowired
     private PostMediaCommentRepository postMediaCommentRepo;
 
@@ -59,5 +56,10 @@ public class ReactionServiceImp implements ReactionService {
         }
         reactionRepo.save(reaction);
         return "Reaction added";
+    }
+
+    @Override
+    public void deleteReaction(Long reactionId) {
+        reactionRepo.deleteById(reactionId);
     }
 }

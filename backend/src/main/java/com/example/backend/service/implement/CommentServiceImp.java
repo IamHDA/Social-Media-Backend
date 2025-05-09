@@ -1,10 +1,12 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.dto.ReactionSummary;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.CommentDTO;
 import com.example.backend.entity.mySQL.PostComment;
-import com.example.backend.repository.mySQL.CommentRepository;
+import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostRepository;
+import com.example.backend.repository.mySQL.ReactionRepository;
 import com.example.backend.service.CommentService;
 import com.example.backend.service.MediaService;
 import com.example.backend.service.UserService;
@@ -25,9 +27,11 @@ public class CommentServiceImp implements CommentService {
     @Autowired
     private MediaService mediaService;
     @Autowired
-    private CommentRepository commentRepo;
+    private PostCommentRepository postCommentRepo;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private ReactionRepository reactionRepo;
 
     @Override
     public CommentDTO createPostComment(MultipartFile image, String content, long postId){
@@ -36,9 +40,24 @@ public class CommentServiceImp implements CommentService {
         comment.setCommentedAt(LocalDateTime.now());
         comment.setPost(postRepo.findById(postId).orElse(null));
         comment.setUser(userService.getCurrentUser());
+        if(!image.isEmpty()) comment.setImageUrl(mediaService.uploadCommentMedia(image));
+        comment = postCommentRepo.save(comment);
+        CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
+        commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
+        return commentDTO;
+    }
+
+    @Override
+    public CommentDTO createCommentResponse(long commentId, MultipartFile image, String content) {
+        PostComment parentComment = postCommentRepo.findById(commentId).orElse(null);
+        PostComment comment = new PostComment();
+        comment.setContent(content);
+        comment.setCommentedAt(LocalDateTime.now());
+        comment.setPost(parentComment.getPost());
+        comment.setUser(userService.getCurrentUser());
         comment.setImageUrl(mediaService.uploadCommentMedia(image));
 
-        comment = commentRepo.save(comment);
+        comment = postCommentRepo.save(comment);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;
@@ -46,13 +65,13 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public List<CommentDTO> getCommentResponse(long commentId) {
-        return commentRepo.findByParent_Id(commentId)
+        return postCommentRepo.findByParent_Id(commentId)
                 .orElse(null)
                 .stream()
                 .map(comment -> {
                     CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
                     commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
-                    if(commentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
                     return commentDTO;
                 })
                 .toList();
@@ -60,12 +79,16 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public List<CommentDTO> getCommentsOfPost(long postId) {
-        return commentRepo.findByPost_Id(postId)
+        return postCommentRepo.findByPost_Id(postId)
                 .stream()
                 .map(comment -> {
                     CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
                     commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
-                    if(commentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    commentDTO.setReactionSummary(ReactionSummary.builder()
+                                    .emotions(reactionRepo.getEmotionsByComment(comment))
+                                    .total(reactionRepo.countReactionsByComment(comment))
+                            .build());
+                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
                     return commentDTO;
                 })
                 .toList();

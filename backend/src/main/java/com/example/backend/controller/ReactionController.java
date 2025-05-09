@@ -3,10 +3,8 @@ package com.example.backend.controller;
 import com.example.backend.dto.payload.ReactionDTO;
 import com.example.backend.service.ReactionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/react")
@@ -15,7 +13,13 @@ public class ReactionController {
     private ReactionService reactionService;
 
     @PostMapping("/send")
-    private String sendReaction(@RequestBody ReactionDTO reactionDto) {
-        return reactionService.addReaction(reactionDto);
+    private ResponseEntity<String> sendReaction(@RequestBody ReactionDTO reactionDto) {
+        return ResponseEntity.ok(reactionService.addReaction(reactionDto));
+    }
+
+    @DeleteMapping("/delete/{reactionId}")
+    private ResponseEntity<Void> deleteReaction(@PathVariable Long reactionId) {
+        reactionService.deleteReaction(reactionId);
+        return ResponseEntity.ok().build();
     }
 }
