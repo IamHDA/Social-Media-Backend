@@ -1,13 +1,18 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.dto.Author;
+import com.example.backend.Enum.NotificationType;
+import com.example.backend.dto.ReactionSummary;
+import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.PostDTO;
 import com.example.backend.dto.PostReactionSummary;
+import com.example.backend.entity.mySQL.Notification;
 import com.example.backend.entity.mySQL.Post;
+import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mongoDB.PostMediaRepository;
 import com.example.backend.repository.mySQL.PostRepository;
 import com.example.backend.repository.mySQL.ReactionRepository;
 import com.example.backend.service.MediaService;
+import com.example.backend.service.NotificationService;
 import com.example.backend.service.PostService;
 import com.example.backend.service.UserService;
 import jakarta.transaction.Transactional;
@@ -16,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,6 +39,8 @@ public class PostServiceImp implements PostService {
     private MediaService mediaService;
     @Autowired
     private ReactionRepository reactionRepo;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public List<PostDTO> getNewestPost() {
@@ -43,17 +49,26 @@ public class PostServiceImp implements PostService {
 
     @Override
     public String createPersonalPost(List<MultipartFile> files, String content, MultipartFile file){
+        User user = userService.getCurrentUser();
         Post post = new Post();
         post.setContent(content);
-        post.setUser(userService.getCurrentUser());
+        post.setUser(user);
         post.setCreatedAt(LocalDateTime.now());
-        if(!file.isEmpty()) post.setBackgroundUrl(mediaService.uploadPostBackground(file));
+        if(file != null) post.setBackgroundUrl(mediaService.uploadPostBackground(file));
         Post tmp = postRepo.save(post);
-        String response = mediaService.uploadPostMedia(files, tmp.getId());
-        if(response.equals("Upload failed")){
-            postRepo.deleteById(tmp.getId());
-            return "Creating post failed";
+        if(files != null){
+            String response = mediaService.uploadPostMedia(files, tmp.getId());
+            if(response.equals("Upload failed")){
+                postRepo.deleteById(tmp.getId());
+                return "Creating post failed";
+            }
         }
+        Notification notification = new Notification();
+        notification.setPost(tmp);
+        notification.setUser(user);
+        notification.setType(NotificationType.POST);
+        notification.setContent(user.getUsername() + " Đã tạo 1 bài viết mới: " + content);
+        notificationService.sendNotification(notification, user);
         return "Post created successfully";
     }
 
@@ -75,7 +90,7 @@ public class PostServiceImp implements PostService {
                 .stream()
                 .map(post -> {
                     PostDTO postDTO = modelMapper.map(post, PostDTO.class);
-                    Author author = modelMapper.map(post.getUser(), Author.class);
+                    UserSummary userSummary = modelMapper.map(post.getUser(), UserSummary.class);
                     List<PostReactionSummary> postReactionSummaryList = post.getReactions()
                             .stream()
                             .map(reactions -> PostReactionSummary.builder()
@@ -84,8 +99,11 @@ public class PostServiceImp implements PostService {
                                     .build())
                             .toList();
                     postDTO.setPostMediaList(postMediaRepo.findByPostId(post.getId()));
-                    postDTO.setAuthor(author);
-                    postDTO.setEmotions(reactionRepo.getEmotionByPost(post));
+                    postDTO.setUserSummary(userSummary);
+                    postDTO.setReactionSummary(ReactionSummary.builder()
+                                    .emotions(reactionRepo.getEmotionByPost(post))
+                                    .total(reactionRepo.countReactionsByPost(post))
+                            .build());
                     postDTO.setReactionsDto(postReactionSummaryList);
                     return postDTO;
                 })

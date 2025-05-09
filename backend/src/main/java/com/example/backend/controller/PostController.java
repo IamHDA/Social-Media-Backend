@@ -42,16 +42,16 @@ public class PostController {
                                     schema = @Schema(type = "string", format = "binary")
                             ))
             )
-            @RequestPart(name = "files") List<MultipartFile> files,
+            @RequestPart(name = "files", required = false) List<MultipartFile> files,
 
-            @RequestPart(name = "content") String content,
+            @RequestPart(name = "content", required = false) String content,
 
-            @Parameter(
-                    description = "Ảnh nền bài viết",
-                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-                            schema = @Schema(type = "string", format = "binary"))
-            )
-            @RequestPart(name = "postBackground") MultipartFile file
+    @Parameter(
+            description = "Ảnh nền bài viết",
+            content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                    schema = @Schema(type = "string", format = "binary"))
+    )
+    @RequestPart(name = "postBackground", required = false) MultipartFile file
     ){
         return ResponseEntity.ok(postService.createPersonalPost(files, content, file));
     }

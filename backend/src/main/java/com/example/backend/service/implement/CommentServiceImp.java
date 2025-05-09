@@ -1,6 +1,6 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.dto.Author;
+import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.CommentDTO;
 import com.example.backend.entity.mySQL.PostComment;
 import com.example.backend.repository.mySQL.CommentRepository;
@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class CommentServiceImp implements CommentService {
@@ -40,7 +40,34 @@ public class CommentServiceImp implements CommentService {
 
         comment = commentRepo.save(comment);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
-        commentDTO.setAuthor(modelMapper.map(comment.getUser(), Author.class));
+        commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;
+    }
+
+    @Override
+    public List<CommentDTO> getCommentResponse(long commentId) {
+        return commentRepo.findByParent_Id(commentId)
+                .orElse(null)
+                .stream()
+                .map(comment -> {
+                    CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
+                    commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
+                    if(commentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    return commentDTO;
+                })
+                .toList();
+    }
+
+    @Override
+    public List<CommentDTO> getCommentsOfPost(long postId) {
+        return commentRepo.findByPost_Id(postId)
+                .stream()
+                .map(comment -> {
+                    CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
+                    commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
+                    if(commentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    return commentDTO;
+                })
+                .toList();
     }
 }

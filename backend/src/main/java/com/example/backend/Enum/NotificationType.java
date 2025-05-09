@@ -4,5 +4,6 @@ public enum NotificationType {
     POST,
     COMMENT,
     MEDIA_COMMENT,
-    MESSAGE
+    MESSAGE,
+    FRIEND_REQUEST
 }

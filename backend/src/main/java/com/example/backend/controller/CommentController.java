@@ -4,17 +4,26 @@ import com.example.backend.dto.CommentDTO;
 import com.example.backend.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/comment")
 public class CommentController {
     @Autowired
     private CommentService commentService;
+
+    @GetMapping("/response/{id}")
+    public ResponseEntity<List<CommentDTO>> getCommentResponse(@PathVariable long id) {
+        return ResponseEntity.ok(commentService.getCommentResponse(id));
+    }
+
+    @GetMapping("/post/{id}")
+    public ResponseEntity<List<CommentDTO>> getCommentPost(@PathVariable long id) {
+        return ResponseEntity.ok(commentService.getCommentsOfPost(id));
+    }
 
     @PostMapping("/create")
     public ResponseEntity<CommentDTO> createComment(

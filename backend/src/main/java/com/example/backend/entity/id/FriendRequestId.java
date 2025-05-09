@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class FriendRequestId {
-    private long userId1;
-    private long userId2;
+    private long user1Id;
+    private long user2Id;
 
-    public FriendRequestId(long userId1, long userId2) {
-        this.userId1 = userId1;
-        this.userId2 = userId2;
+    public FriendRequestId(long user1Id, long user2Id) {
+        this.user1Id = user1Id;
+        this.user2Id = user2Id;
     }
 }

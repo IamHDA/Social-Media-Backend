@@ -4,12 +4,14 @@ import com.example.backend.entity.id.FriendRequestId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Data
 @Table(name = "friend_request")
+@NoArgsConstructor
 public class FriendRequest {
     @EmbeddedId
     private FriendRequestId id;
@@ -18,12 +20,12 @@ public class FriendRequest {
     @Column(name = "request_time")
     private LocalDateTime requestTime;
 
-    @MapsId("user1")
+    @MapsId("user1Id")
     @ManyToOne
     @JoinColumn(name = "user1_id", nullable = false)
     private User user1;
 
-    @MapsId("user2")
+    @MapsId("user2Id")
     @ManyToOne
     @JoinColumn(name = "user2_id", nullable = false)
     private User user2;

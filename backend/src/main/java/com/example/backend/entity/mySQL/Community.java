@@ -1,5 +1,6 @@
 package com.example.backend.entity.mySQL;
 
+import com.example.backend.Enum.CommunityPrivacy;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,13 +18,16 @@ public class Community {
     @Column(nullable = false)
     private String name;
     private String description;
+    private byte[] avatar;
+    private byte[] backgroundImage;
+    private CommunityPrivacy privacy;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "create_time",  nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User creator;
 
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityMember> members;

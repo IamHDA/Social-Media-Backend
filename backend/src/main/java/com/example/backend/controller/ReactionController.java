@@ -18,6 +18,4 @@ public class ReactionController {
     private String sendReaction(@RequestBody ReactionDTO reactionDto) {
         return reactionService.addReaction(reactionDto);
     }
-
-
 }

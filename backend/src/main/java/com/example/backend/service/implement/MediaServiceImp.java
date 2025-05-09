@@ -32,7 +32,7 @@ public class MediaServiceImp implements MediaService {
                         .url(mediaUrl)
                         .postId(postId)
                         .build());
-                file.transferTo(new File("C:/Social-Media-Backend/media/post_media" + file.getOriginalFilename()));
+                file.transferTo(new File("C:/Social-Media-Backend/media/post_media/" + file.getOriginalFilename()));
             }
             return "Upload successfully";
         }catch (Exception e){
@@ -46,7 +46,7 @@ public class MediaServiceImp implements MediaService {
         try{
             String url = "http://100.114.40.116:8081/PostMedia/";
             String mediaUrl = url + file.getOriginalFilename();
-            file.transferTo(new File("C:/Social-Media-Backend/media/post_media" + file.getOriginalFilename()));
+            file.transferTo(new File("C:/Social-Media-Backend/media/post_media/" + file.getOriginalFilename()));
             return mediaUrl;
         }catch (Exception e){
             log.error(e.getMessage());
@@ -59,7 +59,7 @@ public class MediaServiceImp implements MediaService {
         try{
             String url = "http://100.114.40.116:8081/CommentMedia/";
             String mediaUrl = url + file.getOriginalFilename();
-            file.transferTo(new File("C:/Social-Media-Backend/media/comment_media" + file.getOriginalFilename()));
+            file.transferTo(new File("C:/Social-Media-Backend/media/comment_media/" + file.getOriginalFilename()));
             return mediaUrl;
         }catch (Exception e){
             log.error(e.getMessage());

@@ -29,14 +29,14 @@ public class Reaction {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne
-    @JoinColumn(name = "comment_id", nullable = false)
+    @JoinColumn(name = "comment_id")
     private PostComment postComment;
 
     @ManyToOne
-    @JoinColumn(name = "media_comment_id", nullable = false)
+    @JoinColumn(name = "media_comment_id")
     private PostMediaComment postMediaComment;
 }
