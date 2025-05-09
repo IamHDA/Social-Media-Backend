@@ -4,6 +4,7 @@ import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.*;
 import com.example.backend.entity.mySQL.Notification;
 import com.example.backend.entity.mySQL.Post;
+import com.example.backend.entity.mySQL.Reaction;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mongoDB.PostMediaRepository;
 import com.example.backend.repository.mySQL.PostRepository;
@@ -101,7 +102,8 @@ public class PostServiceImp implements PostService {
                                     .emotions(reactionRepo.getEmotionsByPost(post))
                                     .total(reactionRepo.countReactionsByPost(post))
                             .build());
-                    postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));
+                    Reaction reaction = reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), post);
+                    if(reaction != null) postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));
                     postDTO.setReactionsDto(postReactionSummaryList);
                     return postDTO;
                 })
