@@ -1,9 +1,11 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.Emotion;
-import com.example.backend.Enum.ReferenceType;
+import com.example.backend.Enum.ReactionType;
 import com.example.backend.dto.payload.ReactionRequest;
+import com.example.backend.entity.mongoDB.Message;
 import com.example.backend.entity.mySQL.*;
+import com.example.backend.repository.mongoDB.MessageRepository;
 import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;
 import com.example.backend.repository.mySQL.PostRepository;
@@ -27,6 +29,8 @@ public class ReactionServiceImp implements ReactionService {
     private PostCommentRepository commentRepo;
     @Autowired
     private PostMediaCommentRepository postMediaCommentRepo;
+    @Autowired
+    private MessageRepository messageRepo;
 
     public ReactionServiceImp(UserService userService) {
         this.userService = userService;
@@ -39,35 +43,71 @@ public class ReactionServiceImp implements ReactionService {
         reaction.setUser(user);
         reaction.setEmotion(Emotion.valueOf(reactionRequest.getEmotion()));
         reaction.setReactAt(LocalDateTime.now());
-        if(reactionRequest.getType().equals("POST")){
-            Post post = postRepo.findById(reactionRequest.getId()).orElse(null);
-            reaction.setPost(post);
-            reaction.setReferenceType(ReferenceType.valueOf(reactionRequest.getType()));
-        }else if(reactionRequest.getType().equals("COMMENT")){
-            PostComment comment = commentRepo.findById(reactionRequest.getId()).orElse(null);
-            reaction.setPostComment(comment);
-            reaction.setReferenceType(ReferenceType.valueOf(reactionRequest.getType()));
-        }else if(reactionRequest.getType().equals("MEDIA")){
-            PostMediaComment postMediaComment = postMediaCommentRepo.findById(reactionRequest.getId()).orElse(null);
-            reaction.setPostMediaComment(postMediaComment);
+        switch (reactionRequest.getType()) {
+            case "POST" -> {
+                long id = Long.parseLong(reactionRequest.getId());
+                Post post = postRepo.findById(id).orElse(null);
+                reaction.setPost(post);
+                reaction.setReactionType(ReactionType.valueOf(reactionRequest.getType()));
+            }
+            case "COMMENT" -> {
+                long id = Long.parseLong(reactionRequest.getId());
+                PostComment comment = commentRepo.findById(id).orElse(null);
+                reaction.setPostComment(comment);
+                reaction.setReactionType(ReactionType.valueOf(reactionRequest.getType()));
+            }
+            case "MEDIA" -> {
+                long id = Long.parseLong(reactionRequest.getId());
+                PostMediaComment postMediaComment = postMediaCommentRepo.findById(id).orElse(null);
+                reaction.setReactionType(ReactionType.valueOf(reactionRequest.getType()));
+                reaction.setPostMediaComment(postMediaComment);
+            }
+            case "MESSAGE" -> {
+                reaction.setMessageId(reactionRequest.getId());
+                reaction.setReactionType(ReactionType.valueOf(reactionRequest.getType()));
+            }
         }
         reactionRepo.save(reaction);
         return "Reaction added";
     }
 
     @Override
-    public void deleteReaction(long postId) {
-        User user = userService.getCurrentUser();
-        Reaction reaction = reactionRepo.findReactionByUserAndPost(user, postRepo.findById(postId).orElse(null));
+    public String deleteReaction(ReactionRequest reactionRequest) {
+        Reaction reaction = getReactionByType(reactionRequest);
         reactionRepo.delete(reaction);
+        return "Reaction deleted";
     }
 
     @Override
     public String changeReaction(ReactionRequest reactionRequest) {
-        Reaction reaction = reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), postRepo.findById(reactionRequest.getId()).orElse(null));
+        Reaction reaction = getReactionByType(reactionRequest);
         reaction.setEmotion(Emotion.valueOf(reactionRequest.getEmotion()));
         reaction.setReactAt(LocalDateTime.now());
         reactionRepo.save(reaction);
         return "Reaction changed";
+    }
+
+    private Reaction getReactionByType(ReactionRequest reactionRequest) {
+        User user = userService.getCurrentUser();
+        Reaction reaction = new Reaction();
+        switch (reactionRequest.getType()) {
+            case "POST" -> {
+                long id = Long.parseLong(reactionRequest.getId());
+                Post post = postRepo.findById(id).orElse(null);
+                reaction = reactionRepo.findByUserAndPost(user, post);
+            }
+            case "COMMENT" -> {
+                long id = Long.parseLong(reactionRequest.getId());
+                PostComment comment = commentRepo.findById(id).orElse(null);
+                reaction = reactionRepo.findByUserAndPostComment(user, comment);
+            }
+            case "MEDIA" -> {
+                long id = Long.parseLong(reactionRequest.getId());
+                PostMediaComment postMediaComment = postMediaCommentRepo.findById(id).orElse(null);
+                reaction = reactionRepo.findByUserAndPostMediaComment(user, postMediaComment);
+            }
+            case "MESSAGE" -> reaction = reactionRepo.findByUserAndMessageId(user, reactionRequest.getId());
+        }
+        return reaction;
     }
 }

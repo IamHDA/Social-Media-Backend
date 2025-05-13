@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 public interface ReactionService {
     String addReaction(ReactionRequest reactionRequest);
 
-    void deleteReaction(long postId);
+    String deleteReaction(ReactionRequest reactionRequest);
 
     String changeReaction(ReactionRequest reactionDto);
 }

@@ -13,7 +13,6 @@ import com.example.backend.service.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -140,8 +139,8 @@ public class PostServiceImp implements PostService {
                                     .emotions(reactionRepo.getEmotionsByPost(post))
                                     .total(reactionRepo.countReactionsByPost(post))
                             .build());
-                    Reaction reaction = reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), post);
-                    if(reaction != null) postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));
+                    Reaction reaction = reactionRepo.findByUserAndPost(userService.getCurrentUser(), post);
+                    if(reaction != null) postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));
                     postDTO.setReactionsDto(postReactionSummaryList);
                     return postDTO;
                 })

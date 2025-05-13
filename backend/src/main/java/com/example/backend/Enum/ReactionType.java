@@ -1,7 +1,8 @@
 package com.example.backend.Enum;
 
-public enum ReferenceType {
+public enum ReactionType {
     POST,
     COMMENT,
-    MEDIA
+    MEDIA,
+    MESSAGE
 }

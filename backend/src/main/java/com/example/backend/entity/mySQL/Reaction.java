@@ -1,7 +1,7 @@
 package com.example.backend.entity.mySQL;
 
 import com.example.backend.Enum.Emotion;
-import com.example.backend.Enum.ReferenceType;
+import com.example.backend.Enum.ReactionType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -15,9 +15,11 @@ public class Reaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Column(name = "message_id")
+    private String messageId;
     @Enumerated(EnumType.STRING)
     @Column(name = "reference_type")
-    private ReferenceType referenceType;
+    private ReactionType reactionType;
     @Enumerated(EnumType.STRING)
     private Emotion emotion;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

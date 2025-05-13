@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ReactionRequest {
-    private long id;
+    private String id;
     private String type;
     private String emotion;
 }

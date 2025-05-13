@@ -23,8 +23,7 @@ public class ReactionController {
     }
 
     @DeleteMapping("/deletePostReaction/{postId}")
-    private ResponseEntity<Void> deleteReaction(@PathVariable long postId) {
-        reactionService.deleteReaction(postId);
-        return ResponseEntity.ok().build();
+    private ResponseEntity<String> deleteReaction(@PathVariable ReactionRequest reactionRequest) {
+        return ResponseEntity.ok(reactionService.deleteReaction(reactionRequest));
     }
 }

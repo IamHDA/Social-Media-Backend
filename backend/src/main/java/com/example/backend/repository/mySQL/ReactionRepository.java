@@ -1,10 +1,7 @@
 package com.example.backend.repository.mySQL;
 
 import com.example.backend.Enum.Emotion;
-import com.example.backend.entity.mySQL.Post;
-import com.example.backend.entity.mySQL.PostComment;
-import com.example.backend.entity.mySQL.Reaction;
-import com.example.backend.entity.mySQL.User;
+import com.example.backend.entity.mySQL.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,5 +43,8 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 """)
     Integer countReactionsByComment(@Param("comment")PostComment comment);
 
-    Reaction findReactionByUserAndPost(User user, Post post);
+    Reaction findByUserAndPost(User user, Post post);
+    Reaction findByUserAndPostComment(User user, PostComment comment);
+    Reaction findByUserAndPostMediaComment(User user, PostMediaComment comment);
+    Reaction findByUserAndMessageId(User user, String messageId);
 }
