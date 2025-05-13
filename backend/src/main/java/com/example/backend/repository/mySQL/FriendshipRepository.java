@@ -20,16 +20,11 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Friendsh
             "UNION " +
             "SELECT user1_id FROM friendship WHERE user2_id = :userId )",
             nativeQuery = true)
-    List<User> findFriendsByUser(@Param("userId") Long userId);
+    List<User> findFriendsByUser(@Param("userId") Long userId, Pageable pageable);
     @Query("""
     select f from Friendship f
     where (f.user1.id = :user1Id and f.user2.id = :user2Id) 
     or (f.user1.id = :user2Id and f.user2.id = :user1Id) 
 """)
     Optional<Friendship> findByUserId(@Param("user1Id") long user1Id, @Param("user2Id") long user2Id);
-    @Query("""
-    select distinct f from Friendship f
-    where f.user1.id = :userId or f.user2.id = :userId
-""")
-    List<Friendship> findFriendsByUserId(@Param("userId") long userId, Pageable pageable);
 }

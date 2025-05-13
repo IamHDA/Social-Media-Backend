@@ -1,5 +1,6 @@
 package com.example.backend.entity.mySQL;
 
+import com.example.backend.Enum.PostPrivacy;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -20,6 +21,8 @@ public class Post {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "create_time")
     private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    private PostPrivacy privacy;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "update_time")
     private LocalDateTime updatedAt;
@@ -38,8 +41,7 @@ public class Post {
     private Post parent;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<PostCommunity> postCommunities;
+    private List<PostRecipient> postRecipients;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostComment> postComments;

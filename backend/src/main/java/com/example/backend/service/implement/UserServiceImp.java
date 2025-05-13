@@ -4,6 +4,7 @@ import com.example.backend.Enum.UserStatus;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.UserProfile;
 import com.example.backend.entity.mySQL.User;
+import com.example.backend.repository.mySQL.FilterRepository;
 import com.example.backend.repository.mySQL.FriendshipRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.UserService;
@@ -27,21 +28,16 @@ public class UserServiceImp implements UserService {
     private ModelMapper modelMapper;
     @Autowired
     private FriendshipRepository friendshipRepo;
+    @Autowired
+    private FilterRepository filterRepo;
 
     @Override
     public UserProfile getUserProfile(long id) {
         User user = userRepo.findById(id);
         UserProfile userProfile = modelMapper.map(user, UserProfile.class);
-        userProfile.setFriends(friendshipRepo.findFriendsByUserId(id, PageRequest.ofSize(6))
+        userProfile.setFriends(friendshipRepo.findFriendsByUser(id, PageRequest.ofSize(6))
                 .stream()
-                .map(friend -> {
-                    long user1Id = friend.getUser1().getId();
-                    long user2Id = friend.getUser2().getId();
-                    User tmp;
-                    if(user1Id != id) tmp = userRepo.findById(user1Id);
-                    else tmp = userRepo.findById(user2Id);
-                    return modelMapper.map(tmp, UserSummary.class);
-                })
+                .map(friend -> modelMapper.map(friend, UserSummary.class))
                 .toList());
         return userProfile;
     }
@@ -76,10 +72,9 @@ public class UserServiceImp implements UserService {
 
     @Override
     public List<UserSummary> searchUser(String keyword) {
-        return userRepo.findAllByUsernameContaining(keyword)
+        return filterRepo.searchUser(keyword, getCurrentUser().getId())
                 .stream()
                 .map(user -> modelMapper.map(user, UserSummary.class))
                 .toList();
     }
-
 }

@@ -3,6 +3,8 @@ package com.example.backend.controller;
 import com.example.backend.dto.PostCreate;
 import com.example.backend.dto.PostDTO;
 import com.example.backend.service.PostService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,7 +34,7 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostsByUser(userId));
     }
 
-    @PostMapping(value = "/createPersonal", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createPersonalPost(
             @Parameter(
                     description = "Danh sách file ảnh",
@@ -43,16 +44,25 @@ public class PostController {
                             ))
             )
             @RequestPart(name = "files", required = false) List<MultipartFile> files,
+            @Parameter(
+                    required = true,
+                    schema = @Schema(implementation = PostCreate.class)
+            )
+            @RequestPart(name = "data") String data,
+            @Parameter(
+                    description = "Ảnh nền bài viết",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary"))
+            )
+            @RequestPart(name = "postBackground", required = false) MultipartFile file
+    ) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        PostCreate postCreate = mapper.readValue(data, PostCreate.class);
+        return ResponseEntity.ok(postService.createPost(files, postCreate, file));
+    }
 
-            @RequestPart(name = "content", required = false) String content,
-
-    @Parameter(
-            description = "Ảnh nền bài viết",
-            content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-                    schema = @Schema(type = "string", format = "binary"))
-    )
-    @RequestPart(name = "postBackground", required = false) MultipartFile file
-    ){
-        return ResponseEntity.ok(postService.createPersonalPost(files, content, file));
+    @PutMapping("/postRecipient/changeStatus/{postId}")
+    public ResponseEntity<String> changePostStatus(@PathVariable long postId, @RequestParam("status") boolean postStatus){
+        return ResponseEntity.ok(postService.changePostRecipientStatus(postId, postStatus));
     }
 }

@@ -24,7 +24,7 @@ public class MediaServiceImp implements MediaService {
         try{
             for(MultipartFile file : files){
                 String url = "http://100.114.40.116:8081/PostMedia/";
-                String mediaUrl = url + file.getOriginalFilename();
+                String mediaUrl = url + postId + "_" + file.getOriginalFilename();
                 String tmp = file.getContentType().split("/")[0];
                 MediaType type = MediaType.valueOf(tmp.toUpperCase());
                 postMediaRepo.save(PostMedia.builder()
@@ -32,7 +32,7 @@ public class MediaServiceImp implements MediaService {
                         .url(mediaUrl)
                         .postId(postId)
                         .build());
-                file.transferTo(new File("C:/Social-Media-Backend/media/post_media/" + file.getOriginalFilename()));
+                file.transferTo(new File("C:/Social-Media-Backend/media/post_media/" + postId + "_" + file.getOriginalFilename()));
             }
             return "Upload successfully";
         }catch (Exception e){

@@ -2,7 +2,7 @@ package com.example.backend.Enum;
 
 public enum Emotion {
     LIKE,
-    HEART,
+    LOVE,
     HAHA,
     CRY,
     ANGRY,

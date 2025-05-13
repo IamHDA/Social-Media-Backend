@@ -2,7 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.Emotion;
 import com.example.backend.Enum.ReferenceType;
-import com.example.backend.dto.payload.ReactionDTO;
+import com.example.backend.dto.payload.ReactionRequest;
 import com.example.backend.entity.mySQL.*;
 import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;
@@ -10,7 +10,6 @@ import com.example.backend.repository.mySQL.PostRepository;
 import com.example.backend.repository.mySQL.ReactionRepository;
 import com.example.backend.service.ReactionService;
 import com.example.backend.service.UserService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +19,6 @@ import java.time.LocalDateTime;
 public class ReactionServiceImp implements ReactionService {
     @Autowired
     private PostRepository postRepo;
-    @Autowired
-    private ModelMapper modelMapper;
     @Autowired
     private ReactionRepository reactionRepo;
     @Autowired
@@ -36,22 +33,22 @@ public class ReactionServiceImp implements ReactionService {
     }
 
     @Override
-    public String addReaction(ReactionDTO reactionDTO) {
+    public String addReaction(ReactionRequest reactionRequest) {
         User user = userService.getCurrentUser();
         Reaction reaction = new Reaction();
         reaction.setUser(user);
-        reaction.setEmotion(Emotion.valueOf(reactionDTO.getEmotion()));
+        reaction.setEmotion(Emotion.valueOf(reactionRequest.getEmotion()));
         reaction.setReactAt(LocalDateTime.now());
-        if(reactionDTO.getType().equals( "POST")){
-            Post post = postRepo.findById(reactionDTO.getId()).orElse(null);
+        if(reactionRequest.getType().equals("POST")){
+            Post post = postRepo.findById(reactionRequest.getId()).orElse(null);
             reaction.setPost(post);
-            reaction.setReferenceType(ReferenceType.valueOf(reactionDTO.getType()));
-        }else if(reactionDTO.getType().equals("COMMENT")){
-            PostComment comment = commentRepo.findById(reactionDTO.getId()).orElse(null);
+            reaction.setReferenceType(ReferenceType.valueOf(reactionRequest.getType()));
+        }else if(reactionRequest.getType().equals("COMMENT")){
+            PostComment comment = commentRepo.findById(reactionRequest.getId()).orElse(null);
             reaction.setPostComment(comment);
-            reaction.setReferenceType(ReferenceType.valueOf(reactionDTO.getType()));
-        }else if(reactionDTO.getType().equals("MEDIA")){
-            PostMediaComment postMediaComment = postMediaCommentRepo.findById(reactionDTO.getId()).orElse(null);
+            reaction.setReferenceType(ReferenceType.valueOf(reactionRequest.getType()));
+        }else if(reactionRequest.getType().equals("MEDIA")){
+            PostMediaComment postMediaComment = postMediaCommentRepo.findById(reactionRequest.getId()).orElse(null);
             reaction.setPostMediaComment(postMediaComment);
         }
         reactionRepo.save(reaction);
@@ -59,7 +56,18 @@ public class ReactionServiceImp implements ReactionService {
     }
 
     @Override
-    public void deleteReaction(Long reactionId) {
-        reactionRepo.deleteById(reactionId);
+    public void deleteReaction(long postId) {
+        User user = userService.getCurrentUser();
+        Reaction reaction = reactionRepo.findReactionByUserAndPost(user, postRepo.findById(postId).orElse(null));
+        reactionRepo.delete(reaction);
+    }
+
+    @Override
+    public String changeReaction(ReactionRequest reactionRequest) {
+        Reaction reaction = reactionRepo.findReactionByUserAndPost(userService.getCurrentUser(), postRepo.findById(reactionRequest.getId()).orElse(null));
+        reaction.setEmotion(Emotion.valueOf(reactionRequest.getEmotion()));
+        reaction.setReactAt(LocalDateTime.now());
+        reactionRepo.save(reaction);
+        return "Reaction changed";
     }
 }

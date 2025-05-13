@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.payload.ReactionDTO;
+import com.example.backend.dto.payload.ReactionRequest;
 import com.example.backend.service.ReactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +13,18 @@ public class ReactionController {
     private ReactionService reactionService;
 
     @PostMapping("/send")
-    private ResponseEntity<String> sendReaction(@RequestBody ReactionDTO reactionDto) {
-        return ResponseEntity.ok(reactionService.addReaction(reactionDto));
+    private ResponseEntity<String> sendReaction(@RequestBody ReactionRequest reactionRequest) {
+        return ResponseEntity.ok(reactionService.addReaction(reactionRequest));
     }
 
-    @DeleteMapping("/delete/{reactionId}")
-    private ResponseEntity<Void> deleteReaction(@PathVariable Long reactionId) {
-        reactionService.deleteReaction(reactionId);
+    @PutMapping("/change")
+    ResponseEntity<String> updateReaction(@RequestBody ReactionRequest reactionRequest) {
+        return ResponseEntity.ok(reactionService.changeReaction(reactionRequest));
+    }
+
+    @DeleteMapping("/deletePostReaction/{postId}")
+    private ResponseEntity<Void> deleteReaction(@PathVariable long postId) {
+        reactionService.deleteReaction(postId);
         return ResponseEntity.ok().build();
     }
 }

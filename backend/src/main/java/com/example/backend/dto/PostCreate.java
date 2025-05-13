@@ -9,5 +9,5 @@ import java.util.List;
 @Data
 public class PostCreate {
     private String content;
-    private LocalDateTime createdAt;
+    private String privacy;
 }

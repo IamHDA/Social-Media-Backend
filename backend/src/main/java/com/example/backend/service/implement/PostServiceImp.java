@@ -1,14 +1,11 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
+import com.example.backend.Enum.PostPrivacy;
 import com.example.backend.dto.*;
-import com.example.backend.entity.mySQL.Notification;
-import com.example.backend.entity.mySQL.Post;
-import com.example.backend.entity.mySQL.Reaction;
-import com.example.backend.entity.mySQL.User;
+import com.example.backend.entity.mySQL.*;
 import com.example.backend.repository.mongoDB.PostMediaRepository;
-import com.example.backend.repository.mySQL.PostRepository;
-import com.example.backend.repository.mySQL.ReactionRepository;
+import com.example.backend.repository.mySQL.*;
 import com.example.backend.service.MediaService;
 import com.example.backend.service.NotificationService;
 import com.example.backend.service.PostService;
@@ -16,19 +13,28 @@ import com.example.backend.service.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PostServiceImp implements PostService {
 
     @Autowired
+    private PostRecipientRepository postRecipientRepo;
+    @Autowired
+    private UserRepository userRepo;
+    @Autowired
     private PostMediaRepository postMediaRepo;
     @Autowired
     private PostRepository postRepo;
+    @Autowired
+    private FriendshipRepository friendshipRepo;
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
@@ -39,17 +45,22 @@ public class PostServiceImp implements PostService {
     private ReactionRepository reactionRepo;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private FilterRepository filterRepo;
 
     @Override
     public List<PostDTO> getNewestPost() {
-        return convertPostsToDTO(postRepo.findNewestPost());
+        User user = userService.getCurrentUser();
+        return convertPostsToDTO(filterRepo.getPosts(user.getId()));
     }
 
     @Override
-    public String createPersonalPost(List<MultipartFile> files, String content, MultipartFile file){
+    public String createPost(List<MultipartFile> files, PostCreate data, MultipartFile file){
         User user = userService.getCurrentUser();
         Post post = new Post();
-        post.setContent(content);
+        PostPrivacy postPrivacy = PostPrivacy.valueOf(data.getPrivacy());
+        post.setPrivacy(postPrivacy);
+        post.setContent(data.getContent());
         post.setUser(user);
         post.setCreatedAt(LocalDateTime.now());
         if(file != null) post.setBackgroundUrl(mediaService.uploadPostBackground(file));
@@ -61,12 +72,30 @@ public class PostServiceImp implements PostService {
                 return "Creating post failed";
             }
         }
+        List<User> recipients = new ArrayList<>();
+        if(postPrivacy.equals(PostPrivacy.PUBLIC)){
+            recipients = userRepo.findAll();
+        }else if (postPrivacy.equals(PostPrivacy.PRIVATE)){
+            recipients = friendshipRepo.findFriendsByUser(user.getId(), Pageable.unpaged());
+        }
+        List<PostRecipient> allRecipients = new ArrayList<>(recipients.stream()
+                .map(recipient -> {
+                    PostRecipient postRecipient = new PostRecipient(tmp, recipient);
+                    postRecipient.setUser(recipient);
+                    postRecipient.setPost(tmp);
+                    postRecipient.setReviewed(false);
+                    postRecipient.setDisabled(false);
+                    return postRecipient;
+                })
+                .toList());
+        allRecipients.add(new PostRecipient(tmp, user));
+        postRecipientRepo.saveAll(allRecipients);
         Notification notification = new Notification();
         notification.setPost(tmp);
         notification.setUser(user);
         notification.setType(NotificationType.POST);
-        notification.setContent(user.getUsername() + " Đã tạo 1 bài viết mới: " + content);
-        notificationService.sendNotificationForFriends(notification, user);
+        notification.setContent(user.getUsername() + " Đã tạo 1 bài viết mới: " + data.getContent());
+        notificationService.sendNotificationToFriends(notification, user);
         return "Post created successfully";
     }
 
@@ -76,6 +105,15 @@ public class PostServiceImp implements PostService {
         postRepo.deleteById(postId);
         postMediaRepo.deleteByPostId(postId);
         return "Deleted post successfully";
+    }
+
+    @Override
+    public String changePostRecipientStatus(long postId, boolean status) {
+        User user = userService.getCurrentUser();
+        PostRecipient postRecipient = postRecipientRepo.findByUserIdAndPostId(user.getId(), postId);
+        postRecipient.setDisabled(status);
+        postRecipientRepo.save(postRecipient);
+        return "Status changed successfully";
     }
 
     @Override

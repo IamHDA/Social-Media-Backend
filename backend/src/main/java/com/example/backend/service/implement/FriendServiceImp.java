@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.dto.FriendRequestDTO;
+import com.example.backend.entity.id.FriendRequestId;
 import com.example.backend.entity.mySQL.FriendRequest;
 import com.example.backend.entity.mySQL.Friendship;
 import com.example.backend.entity.mySQL.User;
@@ -29,25 +30,16 @@ public class FriendServiceImp implements FriendService {
     private NotificationService notificationService;
 
     @Override
-    public String sendFriendRequest(long recipientId) {
-        User recipient = userRepo.findById(recipientId);
-        User sender = userService.getCurrentUser();
-        FriendRequest friendRequest = new FriendRequest(sender, recipient);
-        Notification notification = new Notification();
-        notificationService.sendPersonalNotification(
-                notification,
-                sender,
-                recipient,
-                sender.getUsername() + " đã gửi lời mời kết bạn"
-        );
-        friendRequestRepo.save(friendRequest);
-        return "Request sent";
+    public boolean isFriendshipExist(long opponentId) {
+        User currentUser = userService.getCurrentUser();
+        return friendshipRepo.findByUserId(opponentId, currentUser.getId()).isPresent();
     }
 
     @Override
     public String acceptFriendRequest(long friendId) {
         User sender = userRepo.findById(friendId);
         User recipient = userService.getCurrentUser();
+        friendRequestRepo.deleteById(new FriendRequestId(sender.getId(), recipient.getId()));
         Friendship friendship = new Friendship(sender, recipient);
         Notification notification = new Notification();
         notificationService.sendPersonalNotification(
@@ -61,18 +53,10 @@ public class FriendServiceImp implements FriendService {
     }
 
     @Override
-    public boolean isFriendshipExist(long opponentId) {
+    public String deleteFriend(long friendId){
         User currentUser = userService.getCurrentUser();
-        return friendshipRepo.findByUserId(opponentId, currentUser.getId()).isPresent();
-    }
-
-    @Override
-    public FriendRequestDTO getFriendRequest(long opponentId){
-        User currentUser = userService.getCurrentUser();
-        FriendRequest friendRequest = friendRequestRepo.findExistRequestByUser1IdAndUser2Id(currentUser.getId(), opponentId);
-        return FriendRequestDTO.builder()
-                .senderId(friendRequest.getUser1().getId())
-                .recipientId(friendRequest.getUser2().getId())
-                .build();
+        Friendship friendship = friendshipRepo.findByUserId(currentUser.getId(), friendId).orElse(null);
+        friendshipRepo.delete(friendship);
+        return "Friend deleted";
     }
 }

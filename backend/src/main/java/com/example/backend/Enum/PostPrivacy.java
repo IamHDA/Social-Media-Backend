@@ -1,6 +1,6 @@
 package com.example.backend.Enum;
 
-public enum CommunityPrivacy {
+public enum PostPrivacy {
     PUBLIC,
     PRIVATE
 }
