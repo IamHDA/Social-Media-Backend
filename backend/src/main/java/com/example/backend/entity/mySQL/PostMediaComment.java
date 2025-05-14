@@ -21,6 +21,10 @@ public class PostMediaComment {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "comment_time")
     private LocalDateTime commentedAt;
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostMediaComment> parentComments;

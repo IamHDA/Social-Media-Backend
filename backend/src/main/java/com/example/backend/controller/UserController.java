@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.ChangeInformationRequest;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.UserProfile;
 import com.example.backend.dto.CurrentUser;
@@ -28,7 +29,7 @@ public class UserController {
 
     @GetMapping("/profile/{id}")
     public ResponseEntity<UserProfile> getUser(@PathVariable long id) {
-        return ResponseEntity.ok(userService.getUserProfile(id));
+        return ResponseEntity.ok(userService.getProfile(id));
     }
 
     @GetMapping("/currentUser")
@@ -47,7 +48,7 @@ public class UserController {
     )
     @PutMapping(value = "/profile/update/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.ok(userService.updateUserAvatar(file));
+        return ResponseEntity.ok(userService.updateAvatar(file));
     }
 
     @Parameter(
@@ -56,6 +57,11 @@ public class UserController {
     )
     @PutMapping(value = "/profile/update/backgroundImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updateBackgroundImage(@RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.ok(userService.updateUserBackgroundImage(file));
+        return ResponseEntity.ok(userService.updateBackgroundImage(file));
+    }
+
+    @PutMapping("/changeInformation")
+    public ResponseEntity<String> changeInformation(@RequestBody ChangeInformationRequest request){
+        return ResponseEntity.ok(userService.changeInformation(request));
     }
 }

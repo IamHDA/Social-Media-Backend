@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/react")
+@RequestMapping("/reaction")
 public class ReactionController {
     @Autowired
     private ReactionService reactionService;
@@ -22,8 +22,8 @@ public class ReactionController {
         return ResponseEntity.ok(reactionService.changeReaction(reactionRequest));
     }
 
-    @DeleteMapping("/deletePostReaction/{postId}")
-    private ResponseEntity<String> deleteReaction(@PathVariable ReactionRequest reactionRequest) {
+    @DeleteMapping("/delete")
+    private ResponseEntity<String> deleteReaction(@RequestBody ReactionRequest reactionRequest) {
         return ResponseEntity.ok(reactionService.deleteReaction(reactionRequest));
     }
 }

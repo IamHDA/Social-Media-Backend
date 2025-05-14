@@ -54,6 +54,11 @@ public class PostServiceImp implements PostService {
     }
 
     @Override
+    public List<PostDTO> getPostsByUser(long userId) {
+        return convertPostsToDTO(postRepo.findByUser_Id(userId));
+    }
+
+    @Override
     public String createPost(List<MultipartFile> files, PostCreate data, MultipartFile file){
         User user = userService.getCurrentUser();
         Post post = new Post();
@@ -91,19 +96,9 @@ public class PostServiceImp implements PostService {
         postRecipientRepo.saveAll(allRecipients);
         Notification notification = new Notification();
         notification.setPost(tmp);
-        notification.setUser(user);
         notification.setType(NotificationType.POST);
-        notification.setContent(user.getUsername() + " Đã tạo 1 bài viết mới: " + data.getContent());
-        notificationService.sendNotificationToFriends(notification, user);
+        notificationService.sendNotificationToFriends(notification, user, user.getUsername() + " Đã tạo 1 bài viết mới: " + data.getContent());
         return "Post created successfully";
-    }
-
-    @Override
-    @Transactional
-    public String deletePost(long postId){
-        postRepo.deleteById(postId);
-        postMediaRepo.deleteByPostId(postId);
-        return "Deleted post successfully";
     }
 
     @Override
@@ -116,9 +111,13 @@ public class PostServiceImp implements PostService {
     }
 
     @Override
-    public List<PostDTO> getPostsByUser(long userId) {
-        return convertPostsToDTO(postRepo.findByUser_Id(userId));
+    @Transactional
+    public String deletePost(long postId){
+        postRepo.deleteById(postId);
+        postMediaRepo.deleteByPostId(postId);
+        return "Deleted post successfully";
     }
+
 
     public List<PostDTO> convertPostsToDTO(List<Post> posts) {
         return posts

@@ -27,24 +27,40 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     group by r.emotion
     order by count(r.emotion) desc
 """)
-    List<Emotion> getEmotionsByComment(@Param("comment") PostComment comment);
+    List<Emotion> getEmotionsByPostComment(@Param("comment") PostComment comment);
 
     @Query("""
     select count(r)
     from Reaction r
     where r.post = :post
 """)
-    Integer countReactionsByPost(@Param("post") Post post);
+    int countReactionsByPost(@Param("post") Post post);
 
     @Query("""
     select count(r)
     from Reaction r
     where r.postComment = :comment
 """)
-    Integer countReactionsByComment(@Param("comment")PostComment comment);
+    int countReactionsByPostComment(@Param("comment")PostComment comment);
 
     Reaction findByUserAndPost(User user, Post post);
     Reaction findByUserAndPostComment(User user, PostComment comment);
     Reaction findByUserAndPostMediaComment(User user, PostMediaComment comment);
     Reaction findByUserAndMessageId(User user, String messageId);
+
+    @Query("""
+    select r.emotion
+    from Reaction r
+    where r.postMediaComment = :comment
+    group by r.emotion
+    order by count(r.emotion) desc
+""")
+    List<Emotion> getEmotionsByPostMediaComment(@Param("comment") PostMediaComment postMediaComment);
+
+    @Query("""
+    select count(r)
+    from Reaction r
+    where r.postMediaComment = :comment
+""")
+    int countReactionsByPostMediaComment(@Param("comment") PostMediaComment postMediaComment);
 }

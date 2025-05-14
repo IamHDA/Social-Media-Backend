@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 
+import com.example.backend.dto.ChangeInformationRequest;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.UserProfile;
 import com.example.backend.entity.mySQL.User;
@@ -10,9 +11,10 @@ import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
-    UserProfile getUserProfile(long id);
-    String updateUserAvatar(MultipartFile file) throws IOException;
-    String updateUserBackgroundImage(MultipartFile file) throws IOException;
+    UserProfile getProfile(long id);
     User getCurrentUser();
     List<UserSummary> searchUser(String keyword);
+    String updateAvatar(MultipartFile file) throws IOException;
+    String updateBackgroundImage(MultipartFile file) throws IOException;
+    String changeInformation(ChangeInformationRequest request);
 }

@@ -23,9 +23,13 @@ public class NotificationUser {
     @JoinColumn(name = "notification_id", nullable = false)
     private Notification notification;
 
+    @Column(name = "is_read")
+    private boolean isRead;
+
     public NotificationUser(User user, Notification notification) {
         this.user = user;
         this.notification = notification;
         this.id = new NotificationUserId(user.getId(), notification.getId());
+        isRead = false;
     }
 }

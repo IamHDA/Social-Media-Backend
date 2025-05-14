@@ -65,4 +65,9 @@ public class PostController {
     public ResponseEntity<String> changePostStatus(@PathVariable long postId, @RequestParam("status") boolean postStatus){
         return ResponseEntity.ok(postService.changePostRecipientStatus(postId, postStatus));
     }
+
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable long postId){
+        return ResponseEntity.ok(postService.deletePost(postId));
+    }
 }

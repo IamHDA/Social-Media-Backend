@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.UserStatus;
+import com.example.backend.dto.ChangeInformationRequest;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.UserProfile;
 import com.example.backend.entity.mySQL.User;
@@ -32,7 +33,7 @@ public class UserServiceImp implements UserService {
     private FilterRepository filterRepo;
 
     @Override
-    public UserProfile getUserProfile(long id) {
+    public UserProfile getProfile(long id) {
         User user = userRepo.findById(id);
         UserProfile userProfile = modelMapper.map(user, UserProfile.class);
         userProfile.setFriends(friendshipRepo.findFriendsByUser(id, PageRequest.ofSize(6))
@@ -43,7 +44,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public String updateUserAvatar(MultipartFile file) throws IOException {
+    public String updateAvatar(MultipartFile file) throws IOException {
         User user = getCurrentUser();
         user.setAvatar(file.getBytes());
         userRepo.save(user);
@@ -51,7 +52,7 @@ public class UserServiceImp implements UserService {
     }
  
     @Override
-    public String updateUserBackgroundImage(MultipartFile file) throws IOException {
+    public String updateBackgroundImage(MultipartFile file) throws IOException {
         User user = getCurrentUser();
         user.setBackgroundImage(file.getBytes());
         userRepo.save(user);
@@ -76,5 +77,15 @@ public class UserServiceImp implements UserService {
                 .stream()
                 .map(user -> modelMapper.map(user, UserSummary.class))
                 .toList();
+    }
+
+    @Override
+    public String changeInformation(ChangeInformationRequest request) {
+        User user = getCurrentUser();
+        user.setBio(request.getBio());
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername());
+        userRepo.save(user);
+        return "Information Changed!";
     }
 }

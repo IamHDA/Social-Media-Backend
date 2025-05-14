@@ -12,6 +12,7 @@ import com.example.backend.repository.mySQL.PostRepository;
 import com.example.backend.repository.mySQL.ReactionRepository;
 import com.example.backend.service.ReactionService;
 import com.example.backend.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +30,6 @@ public class ReactionServiceImp implements ReactionService {
     private PostCommentRepository commentRepo;
     @Autowired
     private PostMediaCommentRepository postMediaCommentRepo;
-    @Autowired
-    private MessageRepository messageRepo;
 
     public ReactionServiceImp(UserService userService) {
         this.userService = userService;
@@ -72,6 +71,7 @@ public class ReactionServiceImp implements ReactionService {
     }
 
     @Override
+    @Transactional
     public String deleteReaction(ReactionRequest reactionRequest) {
         Reaction reaction = getReactionByType(reactionRequest);
         reactionRepo.delete(reaction);

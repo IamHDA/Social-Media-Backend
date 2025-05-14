@@ -1,7 +1,5 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.FriendRequestDTO;
-import com.example.backend.service.FriendRequestService;
 import com.example.backend.service.FriendService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +10,6 @@ import org.springframework.web.bind.annotation.*;
 public class FriendController {
     @Autowired
     private FriendService friendService;
-    @Autowired
-    private FriendRequestService friendRequestService;
 
     @GetMapping("/checkFriendship/{opponentId}")
     public ResponseEntity<Boolean> checkFriendship(@PathVariable int opponentId) {

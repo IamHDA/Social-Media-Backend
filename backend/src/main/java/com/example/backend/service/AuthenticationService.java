@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthenticationService {
-    public AuthenticationResponse register(Register request);
-    public AuthenticationResponse login(LogIn request);
-    public ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response);
+    AuthenticationResponse register(Register request);
+    AuthenticationResponse login(LogIn request);
+    ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response);
 }

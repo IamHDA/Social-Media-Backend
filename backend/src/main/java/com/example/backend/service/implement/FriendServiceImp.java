@@ -11,6 +11,7 @@ import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.FriendService;
 import com.example.backend.service.NotificationService;
 import com.example.backend.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,7 @@ public class FriendServiceImp implements FriendService {
     }
 
     @Override
+    @Transactional
     public String deleteFriend(long friendId){
         User currentUser = userService.getCurrentUser();
         Friendship friendship = friendshipRepo.findByUserId(currentUser.getId(), friendId).orElse(null);

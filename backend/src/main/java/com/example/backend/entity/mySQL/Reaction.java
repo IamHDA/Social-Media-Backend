@@ -17,6 +17,8 @@ public class Reaction {
     private long id;
     @Column(name = "message_id")
     private String messageId;
+    @Column(name = "image_url")
+    private String imageUrl;
     @Enumerated(EnumType.STRING)
     @Column(name = "reference_type")
     private ReactionType reactionType;

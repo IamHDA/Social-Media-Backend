@@ -10,8 +10,8 @@ import java.util.List;
 
 public interface PostService {
     List<PostDTO> getNewestPost();
+    List<PostDTO> getPostsByUser(long userId);
     String createPost(List<MultipartFile> files, PostCreate data, MultipartFile file);
     String deletePost(long postId);
     String changePostRecipientStatus(long postId, boolean status);
-    List<PostDTO> getPostsByUser(long userId);
 }

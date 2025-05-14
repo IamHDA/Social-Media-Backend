@@ -11,6 +11,7 @@ import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.FriendRequestService;
 import com.example.backend.service.NotificationService;
 import com.example.backend.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,19 @@ public class FriendRequestServiceImp implements FriendRequestService {
     private NotificationService notificationService;
     @Autowired
     private FriendRequestRepository friendRequestRepo;
+
+    @Override
+    public FriendRequestDTO getFriendRequest(long opponentId){
+        User currentUser = userService.getCurrentUser();
+        FriendRequest friendRequest = friendRequestRepo.findExistRequestByUser1IdAndUser2Id(currentUser.getId(), opponentId);
+        if(friendRequest == null){
+            return null;
+        }
+        return FriendRequestDTO.builder()
+                .senderId(friendRequest.getUser1().getId())
+                .recipientId(friendRequest.getUser2().getId())
+                .build();
+    }
 
     @Override
     public String sendFriendRequest(long recipientId) {
@@ -42,21 +56,9 @@ public class FriendRequestServiceImp implements FriendRequestService {
     }
 
     @Override
+    @Transactional
     public String deleteFriendRequest(long senderId, long recipientId) {
         friendRequestRepo.deleteById(new FriendRequestId(senderId, recipientId));
         return "Friend request deleted";
-    }
-
-    @Override
-    public FriendRequestDTO getFriendRequest(long opponentId){
-        User currentUser = userService.getCurrentUser();
-        FriendRequest friendRequest = friendRequestRepo.findExistRequestByUser1IdAndUser2Id(currentUser.getId(), opponentId);
-        if(friendRequest == null){
-            return null;
-        }
-        return FriendRequestDTO.builder()
-                .senderId(friendRequest.getUser1().getId())
-                .recipientId(friendRequest.getUser2().getId())
-                .build();
     }
 }
