@@ -29,28 +29,29 @@ public class MediaCommentController {
         return ResponseEntity.ok(mediaCommentService.getResponses(commentId));
     }
 
-    @PostMapping(value = "/create/{mediaId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create/{mediaId}/{authorId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommentDTO> createCommentMedia(
-            @PathVariable("mediaId") String mediaId,
+            @PathVariable String mediaId,
+            @PathVariable long authorId,
             @Parameter(
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                             schema = @Schema(type = "string", format = "binary"))
             )
-            @RequestPart("image") MultipartFile commentImage,
-            @RequestPart("content") String content
+            @RequestPart(name = "file", required = false) MultipartFile file,
+            @RequestPart(name = "content", required = false) String content
     ){
-        return ResponseEntity.ok(mediaCommentService.createComment(commentImage, content, mediaId));
+        return ResponseEntity.ok(mediaCommentService.createComment(file, content, mediaId, authorId));
     }
 
-    @PostMapping(value = "/createResponse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/createResponse/{commentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommentDTO> createCommentResponse(
-            @RequestPart(name = "commentId") long commentId,
+            @PathVariable long commentId,
             @Parameter(
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                             schema = @Schema(type = "string", format = "binary"))
             )
-            @RequestPart(name = "file") MultipartFile file,
-            @RequestPart(name = "content") String content
+            @RequestPart(name = "file", required = false) MultipartFile file,
+            @RequestPart(name = "content", required = false) String content
     ){
         return ResponseEntity.ok(mediaCommentService.createResponse(commentId, file, content));
     }

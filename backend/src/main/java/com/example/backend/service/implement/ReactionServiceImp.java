@@ -36,7 +36,7 @@ public class ReactionServiceImp implements ReactionService {
     }
 
     @Override
-    public String addReaction(ReactionRequest reactionRequest) {
+    public long addReaction(ReactionRequest reactionRequest) {
         User user = userService.getCurrentUser();
         Reaction reaction = new Reaction();
         reaction.setUser(user);
@@ -66,48 +66,22 @@ public class ReactionServiceImp implements ReactionService {
                 reaction.setReactionType(ReactionType.valueOf(reactionRequest.getType()));
             }
         }
-        reactionRepo.save(reaction);
-        return "Reaction added";
+        return reactionRepo.save(reaction).getId();
     }
 
     @Override
     @Transactional
-    public String deleteReaction(ReactionRequest reactionRequest) {
-        Reaction reaction = getReactionByType(reactionRequest);
-        reactionRepo.delete(reaction);
+    public String deleteReaction(long reactionId) {
+        reactionRepo.deleteById(reactionId);
         return "Reaction deleted";
     }
 
     @Override
-    public String changeReaction(ReactionRequest reactionRequest) {
-        Reaction reaction = getReactionByType(reactionRequest);
-        reaction.setEmotion(Emotion.valueOf(reactionRequest.getEmotion()));
+    public String changeReaction(long reactionId, String emotion) {
+        Reaction reaction = reactionRepo.findById(reactionId).orElse(null);
+        reaction.setEmotion(Emotion.valueOf(emotion));
         reaction.setReactAt(LocalDateTime.now());
         reactionRepo.save(reaction);
         return "Reaction changed";
-    }
-
-    private Reaction getReactionByType(ReactionRequest reactionRequest) {
-        User user = userService.getCurrentUser();
-        Reaction reaction = new Reaction();
-        switch (reactionRequest.getType()) {
-            case "POST" -> {
-                long id = Long.parseLong(reactionRequest.getId());
-                Post post = postRepo.findById(id).orElse(null);
-                reaction = reactionRepo.findByUserAndPost(user, post);
-            }
-            case "COMMENT" -> {
-                long id = Long.parseLong(reactionRequest.getId());
-                PostComment comment = commentRepo.findById(id).orElse(null);
-                reaction = reactionRepo.findByUserAndPostComment(user, comment);
-            }
-            case "MEDIA" -> {
-                long id = Long.parseLong(reactionRequest.getId());
-                PostMediaComment postMediaComment = postMediaCommentRepo.findById(id).orElse(null);
-                reaction = reactionRepo.findByUserAndPostMediaComment(user, postMediaComment);
-            }
-            case "MESSAGE" -> reaction = reactionRepo.findByUserAndMessageId(user, reactionRequest.getId());
-        }
-        return reaction;
     }
 }

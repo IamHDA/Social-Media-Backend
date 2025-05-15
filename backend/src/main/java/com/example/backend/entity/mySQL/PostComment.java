@@ -21,8 +21,8 @@ public class PostComment {
     private LocalDateTime commentedAt;
     @Column(name = "update_time")
     private LocalDateTime updateTime;
-    @Column(name = "image_url")
-    private String imageUrl;
+    @Column(name = "media_url")
+    private String mediaUrl;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

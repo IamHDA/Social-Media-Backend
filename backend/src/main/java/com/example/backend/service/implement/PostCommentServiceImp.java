@@ -5,6 +5,7 @@ import com.example.backend.dto.ReactionSummary;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.CommentDTO;
 import com.example.backend.entity.mySQL.Notification;
+import com.example.backend.entity.mySQL.Post;
 import com.example.backend.entity.mySQL.PostComment;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mySQL.PostCommentRepository;
@@ -42,33 +43,42 @@ public class PostCommentServiceImp implements PostCommentService {
     private NotificationService notificationService;
 
     @Override
-    public CommentDTO createComment(MultipartFile image, String content, long postId){
+    public CommentDTO createComment(MultipartFile file, String content, long postId){
         PostComment comment = new PostComment();
+        Post post = postRepo.findById(postId).orElse(null);
+        User currentUser = userService.getCurrentUser();
         comment.setContent(content);
         comment.setCommentedAt(LocalDateTime.now());
-        comment.setPost(postRepo.findById(postId).orElse(null));
-        comment.setUser(userService.getCurrentUser());
-        if(!image.isEmpty()) comment.setImageUrl(mediaService.uploadCommentMedia(image));
+        comment.setPost(post);
+        comment.setUser(currentUser);
+        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment = postCommentRepo.save(comment);
+        Notification notification = new Notification();
+        if(content == null) content = "1 ảnh";
+        notification.setType(NotificationType.COMMENT);
+        notification.setPostComment(comment);
+        notificationService.sendPersonalNotification(notification, currentUser, post.getUser(), currentUser.getUsername() + " đã bình luận: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;
     }
 
     @Override
-    public CommentDTO createResponse(long commentId, MultipartFile image, String content) {
+    public CommentDTO createResponse(long commentId, MultipartFile file, String content) {
         PostComment parentComment = postCommentRepo.findById(commentId).orElse(null);
         PostComment comment = new PostComment();
         User currentUser = userService.getCurrentUser();
         comment.setContent(content);
         comment.setCommentedAt(LocalDateTime.now());
         comment.setPost(parentComment.getPost());
+        comment.setParent(parentComment);
         comment.setUser(currentUser);
-        comment.setImageUrl(mediaService.uploadCommentMedia(image));
+        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment = postCommentRepo.save(comment);
         Notification notification = new Notification();
-        if(content.isBlank()) content = "1 ảnh";
+        if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
+        notification.setPostComment(comment);
         notificationService.sendPersonalNotification(notification, currentUser, parentComment.getUser(), currentUser.getUsername() + " đã phản hồi: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
@@ -115,8 +125,6 @@ public class PostCommentServiceImp implements PostCommentService {
         postCommentRepo.save(comment);
         return "Comment updated";
     }
-
-
 
     @Override
     @Transactional

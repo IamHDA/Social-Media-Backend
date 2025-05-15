@@ -15,5 +15,5 @@ public class CommentDTO {
     private boolean haveResponses;
     private ReactionSummary reactionSummary;
     @JsonFormat(pattern = "HH:mm dd/MM/yyyy")
-    private LocalDateTime createdAt;
+    private LocalDateTime commentedAt;
 }

@@ -10,6 +10,7 @@ import com.example.backend.entity.mySQL.PostMediaComment;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;
 import com.example.backend.repository.mySQL.ReactionRepository;
+import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.MediaCommentService;
 import com.example.backend.service.MediaService;
 import com.example.backend.service.NotificationService;
@@ -37,6 +38,8 @@ public class MediaCommentServiceImp implements MediaCommentService {
     private ReactionRepository reactionRepo;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private UserRepository userRepo;
 
 
     @Override
@@ -72,14 +75,21 @@ public class MediaCommentServiceImp implements MediaCommentService {
     }
 
     @Override
-    public CommentDTO createComment(MultipartFile image, String content, String mediaId) {
+    public CommentDTO createComment(MultipartFile file, String content, String mediaId, long authorId) {
         PostMediaComment comment = new PostMediaComment();
+        User currentUser = userService.getCurrentUser();
+        User postAuthor = userRepo.findById(authorId);
         comment.setContent(content);
         comment.setCommentedAt(LocalDateTime.now());
         comment.setMediaId(mediaId);
         comment.setUser(userService.getCurrentUser());
-        if(!image.isEmpty()) comment.setImageUrl(mediaService.uploadCommentMedia(image));
+        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment = postMediaCommentRepo.save(comment);
+        Notification notification = new Notification();
+        if(content == null) content = "1 ảnh";
+        notification.setType(NotificationType.COMMENT);
+        notification.setPostMediaComment(comment);
+        notificationService.sendPersonalNotification(notification, currentUser, postAuthor, currentUser.getUsername() + " đã bình luận: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;
@@ -92,11 +102,11 @@ public class MediaCommentServiceImp implements MediaCommentService {
         User currentUser = userService.getCurrentUser();
         comment.setContent(content);
         comment.setCommentedAt(LocalDateTime.now());
-        comment.setImageUrl(parentComment.getImageUrl());
+        comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment.setUser(currentUser);
         comment = postMediaCommentRepo.save(comment);
         Notification notification = new Notification();
-        if(content.isBlank()) content = "1 ảnh";
+        if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
         notificationService.sendPersonalNotification(notification, currentUser, parentComment.getUser(), currentUser.getUsername() + " đã phản hồi: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);

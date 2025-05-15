@@ -23,8 +23,8 @@ public class PostMediaComment {
     private LocalDateTime commentedAt;
     @Column(name = "update_time")
     private LocalDateTime updateTime;
-    @Column(name = "image_url")
-    private String imageUrl;
+    @Column(name = "media_url")
+    private String mediaUrl;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostMediaComment> parentComments;

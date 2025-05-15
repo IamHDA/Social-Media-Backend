@@ -13,17 +13,17 @@ public class ReactionController {
     private ReactionService reactionService;
 
     @PostMapping("/send")
-    private ResponseEntity<String> sendReaction(@RequestBody ReactionRequest reactionRequest) {
+    private ResponseEntity<Long> sendReaction(@RequestBody ReactionRequest reactionRequest) {
         return ResponseEntity.ok(reactionService.addReaction(reactionRequest));
     }
 
-    @PutMapping("/change")
-    ResponseEntity<String> updateReaction(@RequestBody ReactionRequest reactionRequest) {
-        return ResponseEntity.ok(reactionService.changeReaction(reactionRequest));
+    @PutMapping("/change/{reactionId}")
+    ResponseEntity<String> changeReaction(@PathVariable long reactionId, @RequestBody String emotion) {
+        return ResponseEntity.ok(reactionService.changeReaction(reactionId, emotion));
     }
 
-    @DeleteMapping("/delete")
-    private ResponseEntity<String> deleteReaction(@RequestBody ReactionRequest reactionRequest) {
-        return ResponseEntity.ok(reactionService.deleteReaction(reactionRequest));
+    @DeleteMapping("/delete/{reactionId}")
+    private ResponseEntity<String> deleteReaction(@PathVariable long reactionId) {
+        return ResponseEntity.ok(reactionService.deleteReaction(reactionId));
     }
 }
