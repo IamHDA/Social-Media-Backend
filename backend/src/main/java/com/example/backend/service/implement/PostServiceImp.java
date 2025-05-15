@@ -67,8 +67,9 @@ public class PostServiceImp implements PostService {
         post.setContent(data.getContent());
         post.setUser(user);
         post.setCreatedAt(LocalDateTime.now());
-        if(file != null) post.setBackgroundUrl(mediaService.uploadPostBackground(file));
         Post tmp = postRepo.save(post);
+        if(file != null) post.setBackgroundUrl(mediaService.uploadPostBackground(file, tmp.getId()));
+        postRepo.save(tmp);
         if(files != null){
             String response = mediaService.uploadPostMedia(files, tmp.getId());
             if(response.equals("Upload failed")){

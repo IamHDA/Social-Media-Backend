@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.payload.ReactionRequest;
+import com.example.backend.dto.ReactionRequest;
 import com.example.backend.service.ReactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

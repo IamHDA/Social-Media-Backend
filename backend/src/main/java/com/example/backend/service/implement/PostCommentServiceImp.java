@@ -51,8 +51,9 @@ public class PostCommentServiceImp implements PostCommentService {
         comment.setCommentedAt(LocalDateTime.now());
         comment.setPost(post);
         comment.setUser(currentUser);
-        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment = postCommentRepo.save(comment);
+        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        postCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
@@ -73,8 +74,9 @@ public class PostCommentServiceImp implements PostCommentService {
         comment.setPost(parentComment.getPost());
         comment.setParent(parentComment);
         comment.setUser(currentUser);
-        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment = postCommentRepo.save(comment);
+        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        postCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
@@ -103,7 +105,7 @@ public class PostCommentServiceImp implements PostCommentService {
     public List<CommentDTO> getComments(long postId) {
         return postCommentRepo.findByPost_Id(postId)
                 .stream()
-                .filter(comment -> comment.getParent().getId() == null)
+                .filter(comment -> comment.getParent() == null)
                 .map(comment -> {
                     CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
                     commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));

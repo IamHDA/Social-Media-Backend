@@ -60,7 +60,7 @@ public class MediaCommentServiceImp implements MediaCommentService {
     public List<CommentDTO> getComments(String mediaId){
         return postMediaCommentRepo.findByMediaId(mediaId)
                 .stream()
-                .filter(comment -> comment.getParent().getId() == null)
+                .filter(comment -> comment.getParent() == null)
                 .map(comment -> {
                     CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
                     commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
@@ -83,8 +83,9 @@ public class MediaCommentServiceImp implements MediaCommentService {
         comment.setCommentedAt(LocalDateTime.now());
         comment.setMediaId(mediaId);
         comment.setUser(userService.getCurrentUser());
-        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment = postMediaCommentRepo.save(comment);
+        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        postMediaCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
@@ -102,9 +103,10 @@ public class MediaCommentServiceImp implements MediaCommentService {
         User currentUser = userService.getCurrentUser();
         comment.setContent(content);
         comment.setCommentedAt(LocalDateTime.now());
-        comment.setMediaUrl(mediaService.uploadCommentMedia(file));
         comment.setUser(currentUser);
         comment = postMediaCommentRepo.save(comment);
+        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        postMediaCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);

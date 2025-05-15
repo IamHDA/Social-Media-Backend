@@ -9,5 +9,5 @@ public class ConversationDTO {
     private String id;
     private String name;
     private byte[] avatar;
-    private String lastMessage;
+    private LastMessage lastMessage;
 }

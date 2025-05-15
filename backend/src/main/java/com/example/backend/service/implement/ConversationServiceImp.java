@@ -19,7 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ConversationServiceImp implements ConversationService {
@@ -35,7 +37,11 @@ public class ConversationServiceImp implements ConversationService {
     @Override
     public List<ConversationDTO> getConversationsByCurrentUser() {
         User user = userService.getCurrentUser();
-        return conversationRepo.findByParticipants_ParticipantId(user.getId())
+        List<Conversation> conversations = conversationParticipantRepo.findConversationIdByParticipantId(user.getId())
+                .stream()
+                .map(id -> conversationRepo.findById(id).orElse(null))
+                .toList();
+        return conversations
                 .stream()
                 .map(conversation -> ConversationDTO.builder()
                         .id(conversation.getId())
@@ -49,7 +55,6 @@ public class ConversationServiceImp implements ConversationService {
     @Override
     public String createConversation(CreateConversationRequest request, MultipartFile image) throws IOException {
         Conversation conversation = new Conversation();
-        conversation.setParticipantIds(request.getParticipantIds());
         conversation.setCreatedAt(Instant.now());
         conversation.setName(request.getName());
         conversation.setType(ConversationType.valueOf(request.getType()));
@@ -57,7 +62,7 @@ public class ConversationServiceImp implements ConversationService {
         if(request.getType().equals("PRIVATE")) conversation.setMaxSize(2);
         if(request.getType().equals("PUBLIC")) conversation.setMaxSize(50);
         String conversationId = conversationRepo.save(conversation).getId();
-        List<ConversationParticipant> participants = new ArrayList<>();
+        Set<ConversationParticipant> participants = new HashSet<>();
         request.getParticipantIds().add(request.getCreatorId());
         for(Long participantId : request.getParticipantIds()) {
             User user = userRepo.findById(participantId).orElse(null);
@@ -82,9 +87,16 @@ public class ConversationServiceImp implements ConversationService {
 
     @Override
     public String addParticipantToConversation(String conversationId, List<Long> participantIds) {
-        Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
-        conversation.getParticipantIds().addAll(participantIds);
-        conversationRepo.save(conversation);
+        Set<ConversationParticipant> participants = new HashSet<>();
+        for(Long participantId : participantIds) {
+            User user = userRepo.findById(participantId).orElse(null);
+            ConversationParticipant participant = new ConversationParticipant();
+            participant.setConversationId(conversationId);
+            participant.setParticipantId(user.getId());
+            participant.setRole(ParticipantRole.MEMBER);
+            participants.add(participant);
+        }
+        conversationParticipantRepo.saveAll(participants);
         return "Participants added";
     }
 
@@ -97,11 +109,8 @@ public class ConversationServiceImp implements ConversationService {
 
     @Override
     public String deleteParticipant(String conversationId, long participantId) {
-        Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
         ConversationParticipant conversationParticipant = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, participantId);
         conversationParticipantRepo.delete(conversationParticipant);
-        conversation.getParticipantIds().remove(participantId);
-        conversationRepo.save(conversation);
         return "Participant deleted";
     }
 }

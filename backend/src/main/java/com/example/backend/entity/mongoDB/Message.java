@@ -4,18 +4,23 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "message")
 @Data
 public class Message {
     @Id
     private String id;
-    private String chatId;
-    private long conversationId;
+    @Field("conversation_id")
+    private String conversationId;
+    @Field("sender_id")
     private long senderId;
     private String content;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime sendAt;
+    @Field("send_time")
+    private Instant sendAt;
+    private List<MessageMedia> mediaList;
 }

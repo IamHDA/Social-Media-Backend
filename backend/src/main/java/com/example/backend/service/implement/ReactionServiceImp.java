@@ -2,10 +2,8 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.Emotion;
 import com.example.backend.Enum.ReactionType;
-import com.example.backend.dto.payload.ReactionRequest;
-import com.example.backend.entity.mongoDB.Message;
+import com.example.backend.dto.ReactionRequest;
 import com.example.backend.entity.mySQL.*;
-import com.example.backend.repository.mongoDB.MessageRepository;
 import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;
 import com.example.backend.repository.mySQL.PostRepository;
