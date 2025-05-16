@@ -19,7 +19,7 @@ public class ReactionController {
 
     @PutMapping("/change/{reactionId}")
     ResponseEntity<String> changeReaction(@PathVariable long reactionId, @RequestBody String emotion) {
-        return ResponseEntity.ok(reactionService.changeReaction(reactionId, emotion));
+        return ResponseEntity.ok(reactionService.changeReaction(reactionId, emotion.substring(1, emotion.length() - 1)));
     }
 
     @DeleteMapping("/delete/{reactionId}")

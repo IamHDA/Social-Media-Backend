@@ -2,6 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.CommentDTO;
+import com.example.backend.dto.ReactionDTO;
 import com.example.backend.dto.ReactionSummary;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.mySQL.Notification;
@@ -58,6 +59,7 @@ public class MediaCommentServiceImp implements MediaCommentService {
 
     @Override
     public List<CommentDTO> getComments(String mediaId){
+        User currentUser = userService.getCurrentUser();
         return postMediaCommentRepo.findByMediaId(mediaId)
                 .stream()
                 .filter(comment -> comment.getParent() == null)
@@ -68,6 +70,7 @@ public class MediaCommentServiceImp implements MediaCommentService {
                             .emotions(reactionRepo.getEmotionsByPostMediaComment(comment))
                             .total(reactionRepo.countReactionsByPostMediaComment((comment)))
                             .build());
+                    commentDTO.setReactionDTO(modelMapper.map(reactionRepo.findByUserAndPostMediaComment(currentUser, comment), ReactionDTO.class));
                     if(postMediaCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
                     return commentDTO;
                 })
@@ -84,7 +87,11 @@ public class MediaCommentServiceImp implements MediaCommentService {
         comment.setMediaId(mediaId);
         comment.setUser(userService.getCurrentUser());
         comment = postMediaCommentRepo.save(comment);
-        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        if(file != null){
+            String response = mediaService.uploadCommentMedia(file, comment.getId());
+            if(response.equals("Upload failed")) return null;
+            else comment.setMediaUrl(response);
+        }
         postMediaCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
@@ -105,7 +112,11 @@ public class MediaCommentServiceImp implements MediaCommentService {
         comment.setCommentedAt(LocalDateTime.now());
         comment.setUser(currentUser);
         comment = postMediaCommentRepo.save(comment);
-        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        if(file != null){
+            String response = mediaService.uploadCommentMedia(file, comment.getId());
+            if(response.equals("Upload failed")) return null;
+            else comment.setMediaUrl(response);
+        }
         postMediaCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";

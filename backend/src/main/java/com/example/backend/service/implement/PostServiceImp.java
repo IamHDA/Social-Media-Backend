@@ -112,6 +112,30 @@ public class PostServiceImp implements PostService {
     }
 
     @Override
+    public PostDTO sharePost(long postId, String content, String privacy) {
+        User currentUser = userService.getCurrentUser();
+        Post parentPost = postRepo.findById(postId).orElse(null);
+        Post currentPost = new Post();
+        currentPost.setContent(content);
+        currentPost.setUser(currentUser);
+        currentPost.setParent(parentPost);
+        currentPost.setPrivacy(PostPrivacy.valueOf(privacy));
+        return null;
+    }
+
+    @Override
+    public String syncPublicPost() {
+        User currentUser = userService.getCurrentUser();
+        List<PostRecipient> distribution = new ArrayList<>();
+        List<Post> posts = postRepo.findByPrivacy(PostPrivacy.PUBLIC);
+        for(Post post : posts){
+            distribution.add(new PostRecipient(post, currentUser));
+        }
+        postRecipientRepo.saveAll(distribution);
+        return "Sync successfully";
+    }
+
+    @Override
     @Transactional
     public String deletePost(long postId){
         postRepo.deleteById(postId);
@@ -120,30 +144,37 @@ public class PostServiceImp implements PostService {
     }
 
 
-    public List<PostDTO> convertPostsToDTO(List<Post> posts) {
+    private List<PostDTO> convertPostsToDTO(List<Post> posts) {
         return posts
                 .stream()
-                .map(post -> {
-                    PostDTO postDTO = modelMapper.map(post, PostDTO.class);
-                    UserSummary userSummary = modelMapper.map(post.getUser(), UserSummary.class);
-                    List<PostReactionSummary> postReactionSummaryList = post.getReactions()
-                            .stream()
-                            .map(reactions -> PostReactionSummary.builder()
-                                    .reactor(reactions.getUser().getUsername())
-                                    .emotion(reactions.getEmotion())
-                                    .build())
-                            .toList();
-                    postDTO.setPostMediaList(postMediaRepo.findByPostId(post.getId()));
-                    postDTO.setUserSummary(userSummary);
-                    postDTO.setReactionSummary(ReactionSummary.builder()
-                                    .emotions(reactionRepo.getEmotionsByPost(post))
-                                    .total(reactionRepo.countReactionsByPost(post))
-                            .build());
-                    Reaction reaction = reactionRepo.findByUserAndPost(userService.getCurrentUser(), post);
-                    if(reaction != null) postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));
-                    postDTO.setReactionsDto(postReactionSummaryList);
-                    return postDTO;
-                })
+                .map(post -> convertPostToDTO(post))
                 .toList();
+    }
+
+    private PostDTO convertPostToDTO(Post post) {
+        PostDTO postDTO = modelMapper.map(post, PostDTO.class);
+        UserSummary userSummary = modelMapper.map(post.getUser(), UserSummary.class);
+        List<PostReactionSummary> postReactionSummaryList = post.getReactions()
+                .stream()
+                .map(reactions -> PostReactionSummary.builder()
+                        .reactor(reactions.getUser().getUsername())
+                        .emotion(reactions.getEmotion())
+                        .build())
+                .toList();
+        postDTO.setPostMediaList(postMediaRepo.findByPostId(post.getId()));
+        postDTO.setUserSummary(userSummary);
+        if(post.getParent() != null){
+            SharedPost sharedPost = modelMapper.map(post.getParent(), SharedPost.class);
+            sharedPost.setMediaList(postMediaRepo.findByPostId(post.getId()));
+            postDTO.setParentPost(sharedPost);
+        }
+        postDTO.setReactionSummary(ReactionSummary.builder()
+                .emotions(reactionRepo.getEmotionsByPost(post))
+                .total(reactionRepo.countReactionsByPost(post))
+                .build());
+        Reaction reaction = reactionRepo.findByUserAndPost(userService.getCurrentUser(), post);
+        if(reaction != null) postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));
+        postDTO.setReactionsDto(postReactionSummaryList);
+        return postDTO;
     }
 }

@@ -11,8 +11,9 @@ public class CommentDTO {
     private int id;
     private UserSummary userSummary;
     private String content;
-    private String imageUrl;
+    private String mediaUrl;
     private boolean haveResponses;
+    private ReactionDTO reactionDTO;
     private ReactionSummary reactionSummary;
     @JsonFormat(pattern = "HH:mm dd/MM/yyyy")
     private LocalDateTime commentedAt;

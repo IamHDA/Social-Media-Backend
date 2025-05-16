@@ -16,6 +16,7 @@ public class PostDTO {
     private LocalDateTime createdAt;
     @JsonFormat(pattern = "dd/MM/yy HH:mm")
     private LocalDateTime updatedAt;
+    private SharedPost parentPost;
     private UserSummary userSummary;
     private ReactionSummary reactionSummary;
     private ReactionDTO currentUserReaction;

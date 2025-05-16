@@ -12,6 +12,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,5 +66,17 @@ public class UserController {
     @PutMapping("/changeInformation")
     public ResponseEntity<String> changeInformation(@RequestBody ChangeInformationRequest request){
         return ResponseEntity.ok(userService.changeInformation(request));
+    }
+
+    @MessageMapping("/user.disconnect")
+    @SendTo("/topic/public")
+    public String onDisconnect(@Payload long userId){
+        return "disconnected " + userId;
+    }
+
+    @MessageMapping("/user.connect")
+    @SendTo("/topic/public")
+    public String onConnect(@Payload long userId){
+        return "connected " + userId;
     }
 }

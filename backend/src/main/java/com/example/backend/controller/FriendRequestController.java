@@ -17,9 +17,9 @@ public class FriendRequestController {
         return ResponseEntity.ok(friendRequestService.getFriendRequest(opponentId));
     }
 
-    @PostMapping("/delete")
-    public ResponseEntity<String> deleteFriendRequest(@RequestParam int senderId, @RequestParam int receiverId) {
-        return ResponseEntity.ok(friendRequestService.deleteFriendRequest(senderId, receiverId));
+    @PostMapping("/delete/{senderId}/{recipientId}")
+    public ResponseEntity<String> deleteFriendRequest(@PathVariable int senderId, @PathVariable int recipientId) {
+        return ResponseEntity.ok(friendRequestService.deleteFriendRequest(senderId, recipientId));
     }
 
     @PostMapping("/send/{recipientId}")

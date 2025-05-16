@@ -36,10 +36,10 @@ public class PostCommentController {
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                             schema = @Schema(type = "string", format = "binary"))
             )
-            @RequestPart(name = "file", required = false)MultipartFile commentImage,
+            @RequestPart(name = "file", required = false)MultipartFile file,
             @RequestPart(name = "content", required = false) String content
     ) {
-        return ResponseEntity.ok(commentService.createComment(commentImage, content, postId));
+        return ResponseEntity.ok(commentService.createComment(file, content, postId));
     }
 
     @PostMapping(value = "/createResponse/{commentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

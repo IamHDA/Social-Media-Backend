@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.PostCreate;
 import com.example.backend.dto.PostDTO;
+import com.example.backend.dto.SharedPost;
 import com.example.backend.service.PostService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,7 @@ public class PostController {
 
     @Autowired
     private PostService postService;
+    private record SharePostRequest(String content, String privacy){}
 
     @GetMapping("/newestPost")
     public ResponseEntity<List<PostDTO>> getNewestPosts(){
@@ -32,6 +34,11 @@ public class PostController {
     @GetMapping("/{userId}")
     public ResponseEntity<List<PostDTO>> getPostsByUserId(@PathVariable long userId){
         return ResponseEntity.ok(postService.getPostsByUser(userId));
+    }
+
+    @PostMapping("/syncPublicPost")
+    public ResponseEntity<String> syncPublicPost(){
+        return ResponseEntity.ok(postService.syncPublicPost());
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -59,6 +66,11 @@ public class PostController {
         ObjectMapper mapper = new ObjectMapper();
         PostCreate postCreate = mapper.readValue(data, PostCreate.class);
         return ResponseEntity.ok(postService.createPost(files, postCreate, file));
+    }
+
+    @PostMapping("/share/{postId}")
+    public ResponseEntity<PostDTO> sharePost(@PathVariable long postId, @RequestBody SharePostRequest request){
+        return ResponseEntity.ok(postService.sharePost(postId, request.content, request.privacy));
     }
 
     @PutMapping("/postRecipient/changeStatus/{postId}")

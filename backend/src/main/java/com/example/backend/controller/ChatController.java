@@ -35,7 +35,12 @@ public class ChatController {
     @MessageMapping("/groupChat")
     public void sendGroupMessage(@Payload NewMessage newMessage) {
         MessageDTO messageDTO = messageService.sendMessage(newMessage);
-        messagingTemplate.convertAndSend("/topic/group." + newMessage.getRecipientId(), messageDTO);
+        messagingTemplate.convertAndSend("/topic/group." + newMessage.getConversationId(), messageDTO);
+    }
+
+    @GetMapping("/getMessages/{conversationId}")
+    public List<MessageDTO> getMessages(@PathVariable String conversationId) {
+        return messageService.getMessagesByConversationId(conversationId);
     }
 
     @PostMapping("/upload/media")

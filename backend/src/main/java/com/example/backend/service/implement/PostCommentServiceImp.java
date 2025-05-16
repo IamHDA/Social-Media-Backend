@@ -1,13 +1,11 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
+import com.example.backend.dto.ReactionDTO;
 import com.example.backend.dto.ReactionSummary;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.CommentDTO;
-import com.example.backend.entity.mySQL.Notification;
-import com.example.backend.entity.mySQL.Post;
-import com.example.backend.entity.mySQL.PostComment;
-import com.example.backend.entity.mySQL.User;
+import com.example.backend.entity.mySQL.*;
 import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;
 import com.example.backend.repository.mySQL.PostRepository;
@@ -43,6 +41,42 @@ public class PostCommentServiceImp implements PostCommentService {
     private NotificationService notificationService;
 
     @Override
+    public List<CommentDTO> getResponse(long commentId) {
+        return postCommentRepo.findByParent_Id(commentId)
+                .orElse(null)
+                .stream()
+                .map(comment -> {
+                    CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
+                    commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
+                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    return commentDTO;
+                })
+                .toList();
+    }
+
+    @Override
+    public List<CommentDTO> getComments(long postId) {
+        User currentUser = userService.getCurrentUser();
+        return postCommentRepo.findByPost_Id(postId)
+                .stream()
+                .filter(comment -> comment.getParent() == null)
+                .map(comment -> {
+                    CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
+                    commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
+                    commentDTO.setReactionSummary(ReactionSummary.builder()
+                            .emotions(reactionRepo.getEmotionsByPostComment(comment))
+                            .total(reactionRepo.countReactionsByPostComment(comment))
+                            .build());
+                    Reaction reaction = reactionRepo.findByUserAndPostComment(currentUser, comment);
+                    if(reaction == null) commentDTO.setReactionDTO(null);
+                    else commentDTO.setReactionDTO(modelMapper.map(reaction, ReactionDTO.class));
+                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    return commentDTO;
+                })
+                .toList();
+    }
+
+    @Override
     public CommentDTO createComment(MultipartFile file, String content, long postId){
         PostComment comment = new PostComment();
         Post post = postRepo.findById(postId).orElse(null);
@@ -52,7 +86,11 @@ public class PostCommentServiceImp implements PostCommentService {
         comment.setPost(post);
         comment.setUser(currentUser);
         comment = postCommentRepo.save(comment);
-        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        if(file != null){
+            String response = mediaService.uploadCommentMedia(file, comment.getId());
+            if(response.equals("Upload failed")) return null;
+            else comment.setMediaUrl(response);
+        }
         postCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
@@ -75,7 +113,11 @@ public class PostCommentServiceImp implements PostCommentService {
         comment.setParent(parentComment);
         comment.setUser(currentUser);
         comment = postCommentRepo.save(comment);
-        if(file != null) comment.setMediaUrl(mediaService.uploadCommentMedia(file, comment.getId()));
+        if(file != null){
+            String response = mediaService.uploadCommentMedia(file, comment.getId());
+            if(response.equals("Upload failed")) return null;
+            else comment.setMediaUrl(response);
+        }
         postCommentRepo.save(comment);
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
@@ -85,38 +127,6 @@ public class PostCommentServiceImp implements PostCommentService {
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;
-    }
-
-    @Override
-    public List<CommentDTO> getResponse(long commentId) {
-        return postCommentRepo.findByParent_Id(commentId)
-                .orElse(null)
-                .stream()
-                .map(comment -> {
-                    CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
-                    commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
-                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
-                    return commentDTO;
-                })
-                .toList();
-    }
-
-    @Override
-    public List<CommentDTO> getComments(long postId) {
-        return postCommentRepo.findByPost_Id(postId)
-                .stream()
-                .filter(comment -> comment.getParent() == null)
-                .map(comment -> {
-                    CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
-                    commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
-                    commentDTO.setReactionSummary(ReactionSummary.builder()
-                                    .emotions(reactionRepo.getEmotionsByPostComment(comment))
-                                    .total(reactionRepo.countReactionsByPostComment(comment))
-                            .build());
-                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
-                    return commentDTO;
-                })
-                .toList();
     }
 
     @Override
