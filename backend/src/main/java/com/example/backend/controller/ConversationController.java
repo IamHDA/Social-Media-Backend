@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.ConversationDTO;
 import com.example.backend.dto.CreateConversationRequest;
+import com.example.backend.service.ConversationParticipantService;
 import com.example.backend.service.ConversationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,7 +21,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/conversation")
 public class ConversationController {
-
     @Autowired
     private ConversationService conversationService;
 
@@ -29,47 +29,26 @@ public class ConversationController {
         return ResponseEntity.ok(conversationService.getConversationsByCurrentUser());
     }
 
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> createConversation(
-            @Parameter(
-                    content = @Content(
-                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                            array = @ArraySchema(
-                                    schema = @Schema(type = "string", format = "binary")
-                            )
-                    )
-            )
-            @RequestPart(name = "image") MultipartFile image,
-            @Parameter(
-                schema = @Schema(implementation = CreateConversationRequest.class)
-            )
-            @RequestPart(name = "data") String request
-    ) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        CreateConversationRequest data = mapper.readValue(request, CreateConversationRequest.class);
-        return ResponseEntity.ok(conversationService.createConversation(data, image));
+    @PostMapping("/create")
+    public ResponseEntity<String> createConversation(@RequestBody CreateConversationRequest request){
+        return ResponseEntity.ok(conversationService.createConversation(request));
     }
 
-    @PutMapping("/changeRole/{conversationId}/{participantId}")
-    public ResponseEntity<String> changeParticipantRole(
+    @PutMapping("/lastMessage/updateStatus/{conversationId}/{userId}")
+    public ResponseEntity<String> updateLastMessageStatus(@PathVariable String conversationId, @PathVariable long userId){
+        return ResponseEntity.ok(conversationService.updateLastMessageStatus(conversationId, userId));
+    }
+
+    @PutMapping("/changeAvatar/{conversationId}")
+    public ResponseEntity<String> changeAvatar(
             @PathVariable String conversationId,
-            @PathVariable long participantId,
-            @RequestBody String role){
-        return ResponseEntity.ok(conversationService.changeParticipantRole(conversationId, participantId, role));
-    }
-
-    @PutMapping("/addParticipant/{conversationId}")
-    public ResponseEntity<String> addParticipant(@PathVariable String conversationId,@RequestBody List<Long> participantIds){
-        return ResponseEntity.ok(conversationService.addParticipantToConversation(conversationId, participantIds));
+            @RequestParam("image") MultipartFile image
+    ) throws IOException {
+        return ResponseEntity.ok(conversationService.changeConversationAvatar(conversationId, image));
     }
 
     @DeleteMapping("/delete/{conversationId}")
     public ResponseEntity<String> deleteConversation(@PathVariable String conversationId){
         return ResponseEntity.ok(conversationService.deleteConversation(conversationId));
-    }
-
-    @DeleteMapping("/deleteParticipant/{conversationId}/{participantId}")
-    public ResponseEntity<String> deleteParticipant(@PathVariable String conversationId, @PathVariable Long participantId){
-        return ResponseEntity.ok(conversationService.deleteParticipant(conversationId, participantId));
     }
 }

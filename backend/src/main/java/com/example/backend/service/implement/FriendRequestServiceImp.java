@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.FriendRequestDTO;
 import com.example.backend.entity.id.FriendRequestId;
 import com.example.backend.entity.mySQL.FriendRequest;
@@ -45,6 +46,7 @@ public class FriendRequestServiceImp implements FriendRequestService {
         User sender = userService.getCurrentUser();
         FriendRequest friendRequest = new FriendRequest(sender, recipient);
         Notification notification = new Notification();
+        notification.setType(NotificationType.FRIEND_REQUEST);
         notificationService.sendPersonalNotification(
                 notification,
                 sender,

@@ -29,7 +29,7 @@ public class PostComment {
     private User user;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostComment> parentComments;
+    private List<PostComment> responseComment;
 
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")

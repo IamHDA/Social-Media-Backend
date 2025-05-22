@@ -147,7 +147,7 @@ public class PostServiceImp implements PostService {
     private List<PostDTO> convertPostsToDTO(List<Post> posts) {
         return posts
                 .stream()
-                .map(post -> convertPostToDTO(post))
+                .map(this::convertPostToDTO)
                 .toList();
     }
 

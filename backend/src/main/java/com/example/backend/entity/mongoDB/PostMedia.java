@@ -1,16 +1,20 @@
 package com.example.backend.entity.mongoDB;
 
-import com.example.backend.Enum.MediaType;
+import com.example.backend.Enum.FileType;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "post_media")
-@Builder
+@Data
+@NoArgsConstructor
 public class PostMedia {
     @Id
     private String id;
     private long postId;
-    private MediaType mediaType;
+    private FileType fileType;
+    private String path;
     private String url;
 }

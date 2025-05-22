@@ -20,5 +20,5 @@ public class Message {
     private String content;
     @Field("send_time")
     private Instant sendAt;
-    private List<MessageMedia> mediaList;
+    private List<MessageFile> mediaList;
 }

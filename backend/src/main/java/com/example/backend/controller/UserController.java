@@ -3,7 +3,6 @@ package com.example.backend.controller;
 import com.example.backend.dto.ChangeInformationRequest;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.UserProfile;
-import com.example.backend.dto.CurrentUser;
 import com.example.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,8 +35,8 @@ public class UserController {
     }
 
     @GetMapping("/currentUser")
-    public ResponseEntity<CurrentUser> getCurrentUser(){
-        return ResponseEntity.ok(modelMapper.map(userService.getCurrentUser(), CurrentUser.class));
+    public ResponseEntity<UserSummary> getCurrentUser(){
+        return ResponseEntity.ok(modelMapper.map(userService.getCurrentUser(), UserSummary.class));
     }
 
     @GetMapping("/search")

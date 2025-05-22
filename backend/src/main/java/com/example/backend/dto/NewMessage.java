@@ -6,7 +6,8 @@ import java.util.List;
 
 @Data
 public class NewMessage {
-    private String recipientId;
+    private long senderId;
+    private long recipientId;
     private String conversationId;
     private String content;
     private List<MessageMediaDTO> mediaList;

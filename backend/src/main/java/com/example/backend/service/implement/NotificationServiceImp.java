@@ -33,7 +33,7 @@ public class NotificationServiceImp implements NotificationService {
 
     @Override
     public List<NotificationDTO> getNotificationsByUser() {
-        return notificationUserRepo.findByUser(userService.getCurrentUser())
+        return notificationUserRepo.findByUserAndReadOrderByNotification_NoticeAtDesc(userService.getCurrentUser(), false)
                 .stream()
                 .map(notificationUser -> {
                     Notification notification = notificationUser.getNotification();

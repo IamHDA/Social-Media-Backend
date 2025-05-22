@@ -7,7 +7,6 @@ import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.CommentDTO;
 import com.example.backend.entity.mySQL.*;
 import com.example.backend.repository.mySQL.PostCommentRepository;
-import com.example.backend.repository.mySQL.PostMediaCommentRepository;
 import com.example.backend.repository.mySQL.PostRepository;
 import com.example.backend.repository.mySQL.ReactionRepository;
 import com.example.backend.service.NotificationService;
@@ -48,7 +47,11 @@ public class PostCommentServiceImp implements PostCommentService {
                 .map(comment -> {
                     CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
                     commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
-                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    commentDTO.setReactionSummary(ReactionSummary.builder()
+                            .emotions(reactionRepo.getEmotionsByPostComment(comment))
+                            .total(reactionRepo.countReactionsByPostComment(comment))
+                            .build());
+                    commentDTO.setHaveResponses(!comment.getResponseComment().isEmpty());
                     return commentDTO;
                 })
                 .toList();
@@ -70,7 +73,7 @@ public class PostCommentServiceImp implements PostCommentService {
                     Reaction reaction = reactionRepo.findByUserAndPostComment(currentUser, comment);
                     if(reaction == null) commentDTO.setReactionDTO(null);
                     else commentDTO.setReactionDTO(modelMapper.map(reaction, ReactionDTO.class));
-                    if(postCommentRepo.findByParent_Id(comment.getId()).isPresent()) commentDTO.setHaveResponses(true);
+                    commentDTO.setHaveResponses(!comment.getResponseComment().isEmpty());
                     return commentDTO;
                 })
                 .toList();

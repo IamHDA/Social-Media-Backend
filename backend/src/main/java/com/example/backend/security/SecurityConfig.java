@@ -59,7 +59,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/PostMedia/**",
                                 "/MessageMedia/**",
-                                "/CommentMedia/**"
+                                "/CommentMedia/**",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -78,9 +79,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("*"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "http://100.114.40.116:5173", "http://100.114.40.116:8081"));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        corsConfiguration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;

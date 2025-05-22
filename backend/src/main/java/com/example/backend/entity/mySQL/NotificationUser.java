@@ -24,12 +24,12 @@ public class NotificationUser {
     private Notification notification;
 
     @Column(name = "is_read")
-    private boolean isRead;
+    private boolean read;
 
     public NotificationUser(User user, Notification notification) {
         this.user = user;
         this.notification = notification;
         this.id = new NotificationUserId(user.getId(), notification.getId());
-        isRead = false;
+        read = false;
     }
 }

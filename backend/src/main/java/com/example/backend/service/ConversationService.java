@@ -10,9 +10,8 @@ import java.util.List;
 
 public interface ConversationService {
     List<ConversationDTO> getConversationsByCurrentUser();
-    String createConversation(CreateConversationRequest request, MultipartFile image) throws IOException;
-    String changeParticipantRole(String conversationId, long participantId, String role);
-    String addParticipantToConversation(String conversationId, List<Long> participantIds);
+    String createConversation(CreateConversationRequest request);
+    String changeConversationAvatar(String conversationId, MultipartFile file) throws IOException;
     String deleteConversation(String conversationId);
-    String deleteParticipant(String conversationId, long participantId);
+    String updateLastMessageStatus(String conversationId, long userId);
 }

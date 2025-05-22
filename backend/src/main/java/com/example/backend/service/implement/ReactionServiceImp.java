@@ -70,7 +70,8 @@ public class ReactionServiceImp implements ReactionService {
     @Override
     @Transactional
     public String deleteReaction(long reactionId) {
-        reactionRepo.deleteById(reactionId);
+        Reaction reaction = reactionRepo.findById(reactionId).orElse(null);
+        reactionRepo.delete(reaction);
         return "Reaction deleted";
     }
 

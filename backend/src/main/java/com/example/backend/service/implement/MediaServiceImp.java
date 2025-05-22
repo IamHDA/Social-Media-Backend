@@ -1,8 +1,8 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.Enum.MediaType;
+import com.example.backend.Enum.FileType;
 import com.example.backend.dto.MessageMediaDTO;
-import com.example.backend.entity.mongoDB.MessageMedia;
+import com.example.backend.entity.mongoDB.MessageFile;
 import com.example.backend.entity.mongoDB.PostMedia;
 import com.example.backend.repository.mongoDB.MessageMediaRepository;
 import com.example.backend.repository.mongoDB.PostMediaRepository;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,15 +32,18 @@ public class MediaServiceImp implements MediaService {
         try{
             for(MultipartFile file : files){
                 String url = "http://100.114.40.116:8081/PostMedia/";
-                String mediaUrl = url + postId + "_" + file.getOriginalFilename();
+                String fileName = file.getOriginalFilename().replace(" ", "_");
+                String mediaUrl = url + postId + "_" + fileName;
                 String tmp = file.getContentType().split("/")[0];
-                MediaType type = MediaType.valueOf(tmp.toUpperCase());
-                postMediaRepo.save(PostMedia.builder()
-                        .mediaType(type)
-                        .url(mediaUrl)
-                        .postId(postId)
-                        .build());
-                file.transferTo(new File("C:/Social-Media-Backend/media/post_media/" + postId + "_" + file.getOriginalFilename()));
+                FileType type = FileType.valueOf(tmp.toUpperCase());
+                PostMedia postMedia = new PostMedia();
+                postMedia.setUrl(mediaUrl);
+                postMedia.setFileType(type);
+                postMedia.setPostId(postId);
+                String filePath = "C:/Social-Media-Backend/media/post_media/" + postId + "_" + fileName;
+                file.transferTo(new File(filePath));
+                postMedia.setPath(filePath);
+                postMediaRepo.save(postMedia);
             }
             return "Upload successfully";
         }catch (Exception e){
@@ -54,8 +56,8 @@ public class MediaServiceImp implements MediaService {
     public String uploadPostBackground(MultipartFile file, long postId) {
         try{
             String url = "http://100.114.40.116:8081/PostMedia/";
-            String mediaUrl = url + file.getOriginalFilename();
-            file.transferTo(new File("C:/Social-Media-Backend/media/post_media/" + postId + "_" + file.getOriginalFilename()));
+            String mediaUrl = url + postId + "_" + file.getOriginalFilename().replace(" ", "_");
+            file.transferTo(new File("C:/Social-Media/Social-Media-Backend/media/post_media/" + postId + "_" + file.getOriginalFilename().replace(" ", "_")));
             return mediaUrl;
         }catch (Exception e){
             log.error(e.getMessage());
@@ -67,8 +69,8 @@ public class MediaServiceImp implements MediaService {
     public String uploadCommentMedia(MultipartFile file, long commentId) {
         try{
             String url = "http://100.114.40.116:8081/CommentMedia/";
-            String mediaUrl = url + file.getOriginalFilename();
-            file.transferTo(new File("C:/Social-Media-Backend/media/comment_media/" + commentId + "_" + file.getOriginalFilename()));
+            String mediaUrl = url + commentId + "_" + file.getOriginalFilename().replace(" ", "_");
+            file.transferTo(new File("C:/Social-Media/Social-Media-Backend/media/comment_media/" + commentId + "_" + file.getOriginalFilename().replace(" ", "_")));
             return mediaUrl;
         }catch (Exception e){
             log.error(e.getMessage());
@@ -77,26 +79,44 @@ public class MediaServiceImp implements MediaService {
     }
 
     @Override
-    public List<MessageMediaDTO> uploadMessageMedia(List<MultipartFile> files){
+    public List<MessageMediaDTO> uploadMessageFiles(List<MultipartFile> files){
         List<MessageMediaDTO> messageMediaDTOs = new ArrayList<>();
         try {
             for(MultipartFile file : files){
-                String url = "http://100.114.40.116:8081/MessageMedia/";
                 String tmp = file.getContentType().split("/")[0];
-                MediaType type = MediaType.valueOf(tmp.toUpperCase());
-                MessageMedia messageMedia = messageMediaRepo.save(MessageMedia.builder()
-                        .mediaType(type)
-                        .build()
-                );
-                String mediaUrl = url + messageMedia.getId() + "_" + file.getOriginalFilename();
-                messageMedia.setUrl(mediaUrl);
-                messageMediaRepo.save(messageMedia);
-                messageMediaDTOs.add(modelMapper.map(messageMedia, MessageMediaDTO.class));
-                file.transferTo(new File("C:/Social-Media-Backend/media/message_media/" + messageMedia.getId() + "_" + file.getOriginalFilename()));
+                FileType type = FileType.valueOf(tmp.toUpperCase());
+                String fileName = file.getOriginalFilename().replace(" ", "_");
+                long fileSize = file.getSize();
+                MessageFile messageFile = new MessageFile();
+                if(type.equals(FileType.IMAGE) || type.equals(FileType.VIDEO)){
+                    String url = "http://100.114.40.116:8081/MessageMedia/Image_Video/";
+                    messageFile = saveMessageFile(messageMediaDTOs, type, url, fileName, fileSize);
+                    String filePath = "C:/Social-Media/Social-Media-Backend/media/message_media/image_video/" + messageFile.getId() + "_" + fileName;
+                    file.transferTo(new File(filePath));
+                    messageFile.setPath(filePath);
+                }else if(type.equals(FileType.APPLICATION)){
+                    String url = "http://100.114.40.116:8081/MessageMedia/Application/";
+                    messageFile = saveMessageFile(messageMediaDTOs, type, url, fileName, fileSize);
+                    String filePath = "C:/Social-Media/Social-Media-Backend/media/message_media/application/" + messageFile.getId() + "_" + fileName;
+                    file.transferTo(new File(filePath));
+                    messageFile.setPath(filePath);
+                }
+                messageMediaRepo.save(messageFile);
             }
         }catch (Exception e){
             log.error(e.getMessage());
         }
         return messageMediaDTOs;
+    }
+
+    private MessageFile saveMessageFile(List<MessageMediaDTO> messageMediaDTOs, FileType type, String url, String fileName, long fileSize){
+        MessageFile messageFile = messageMediaRepo.save(new MessageFile(type));
+        String mediaUrl = url + messageFile.getId() + "_" + fileName;
+        messageFile.setUrl(mediaUrl);
+        messageFile.setName(fileName);
+        messageFile.setSize(fileSize / 1024.0);
+        messageFile = messageMediaRepo.save(messageFile);
+        messageMediaDTOs.add(modelMapper.map(messageFile, MessageMediaDTO.class));
+        return messageFile;
     }
 }

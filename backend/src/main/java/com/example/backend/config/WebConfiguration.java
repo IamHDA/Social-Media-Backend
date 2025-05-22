@@ -11,15 +11,19 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/PostMedia/**")
-                .addResourceLocations("file:///C:/Social-Media-Backend/media/post_media/")
+                .addResourceLocations("file:///C:/Social-Media/Social-Media-Backend/media/post_media/")
                 .setCacheControl(CacheControl.noCache());
 
-        registry.addResourceHandler("/MessageMedia/**")
-                .addResourceLocations("file:///C:/Social-Media-Backend/media/message_media/")
+        registry.addResourceHandler("/MessageMedia/Image_Video/**")
+                .addResourceLocations("file:///C:/Social-Media/Social-Media-Backend/media/message_media/image_video/")
+                .setCacheControl(CacheControl.noCache());
+
+        registry.addResourceHandler("/MessageMedia/Application/**")
+                .addResourceLocations("file:///C:/Social-Media/Social-Media-Backend/media/message_media/application/")
                 .setCacheControl(CacheControl.noCache());
 
         registry.addResourceHandler("/CommentMedia/**")
-                .addResourceLocations("file:///C:/Social-Media-Backend/media/comment_media/")
+                .addResourceLocations("file:///C:/Social-Media/Social-Media-Backend/media/comment_media/")
                 .setCacheControl(CacheControl.noCache());
     }
 

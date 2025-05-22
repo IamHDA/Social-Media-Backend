@@ -10,12 +10,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@Builder
 public class MessageDTO {
     private String id;
     private String content;
     private String conversationId;
-    private long senderId;
+    private UserSummary sender;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Instant sentAt;
     private List<MessageMediaDTO> mediaList;

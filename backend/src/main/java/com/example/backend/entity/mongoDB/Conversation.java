@@ -18,7 +18,6 @@ import java.util.Set;
 public class Conversation {
     @Id
     private String id;
-    @Indexed(unique = true)
     private String name;
     private int maxSize;
     private byte[] avatar;

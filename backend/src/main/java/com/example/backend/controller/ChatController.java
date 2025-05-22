@@ -3,7 +3,6 @@ package com.example.backend.controller;
 import com.example.backend.dto.MessageDTO;
 import com.example.backend.dto.MessageMediaDTO;
 import com.example.backend.dto.NewMessage;
-import com.example.backend.entity.mongoDB.MessageMedia;
 import com.example.backend.service.MediaService;
 import com.example.backend.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/chat")
 public class ChatController {
-    @Autowired
-    private MediaService mediaService;
     @Autowired
     private MessageService messageService;
     @Autowired
@@ -29,22 +25,12 @@ public class ChatController {
     @MessageMapping("/privateChat")
     public void sendPrivateMessage(@Payload NewMessage newMessage) {
         MessageDTO messageDTO = messageService.sendMessage(newMessage);
-        messagingTemplate.convertAndSendToUser(newMessage.getRecipientId(), "/queue/messages", messageDTO);
+        messagingTemplate.convertAndSendToUser(String.valueOf(newMessage.getRecipientId()), "/queue/messages", messageDTO);
     }
 
     @MessageMapping("/groupChat")
     public void sendGroupMessage(@Payload NewMessage newMessage) {
         MessageDTO messageDTO = messageService.sendMessage(newMessage);
         messagingTemplate.convertAndSend("/topic/group." + newMessage.getConversationId(), messageDTO);
-    }
-
-    @GetMapping("/getMessages/{conversationId}")
-    public List<MessageDTO> getMessages(@PathVariable String conversationId) {
-        return messageService.getMessagesByConversationId(conversationId);
-    }
-
-    @PostMapping("/upload/media")
-    public ResponseEntity<List<MessageMediaDTO>> uploadMedia(@RequestPart("files") List<MultipartFile> files) {
-        return ResponseEntity.ok(mediaService.uploadMessageMedia(files));
     }
 }

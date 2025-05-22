@@ -1,10 +1,14 @@
 package com.example.backend.dto;
 
-import com.example.backend.Enum.MediaType;
+import com.example.backend.Enum.FileType;
+import lombok.Data;
 
+@Data
 public class MessageMediaDTO {
     private String id;
     private String url;
-    private String filePath;
-    private MediaType mediaType;
+    private String path;
+    private FileType type;
+    private String name;
+    private double size;
 }

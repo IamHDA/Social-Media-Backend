@@ -1,18 +1,18 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.config.ModelMapperConfig;
 import com.example.backend.dto.LastMessage;
 import com.example.backend.dto.MessageDTO;
 import com.example.backend.dto.NewMessage;
+import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.mongoDB.Conversation;
+import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mongoDB.Message;
-import com.example.backend.entity.mongoDB.MessageMedia;
-import com.example.backend.entity.mySQL.User;
+import com.example.backend.entity.mongoDB.MessageFile;
 import com.example.backend.repository.mongoDB.ConversationParticipantRepository;
 import com.example.backend.repository.mongoDB.ConversationRepository;
 import com.example.backend.repository.mongoDB.MessageRepository;
+import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.MessageService;
-import com.example.backend.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Service
 public class MessageServiceImp implements MessageService {
     @Autowired
-    private MessageRepository messageRepository;
+    private MessageRepository messageRepo;
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
@@ -32,39 +32,55 @@ public class MessageServiceImp implements MessageService {
     @Autowired
     private ConversationParticipantRepository conversationParticipantRepo;
     @Autowired
-    private UserService userService;
+    private UserRepository userRepo;
 
     @Override
     public MessageDTO sendMessage(NewMessage newMessage) {
-        User sender = userService.getCurrentUser();
         Message message = modelMapper.map(newMessage, Message.class);
         message.setMediaList(newMessage.getMediaList()
                 .stream()
-                .map(mediaDTO -> modelMapper.map(mediaDTO, MessageMedia.class))
+                .map(mediaDTO -> modelMapper.map(mediaDTO, MessageFile.class))
                 .toList());
         message.setSendAt(Instant.now());
-        message.setSenderId(sender.getId());
-        message = messageRepository.save(message);
+        message.setSenderId(newMessage.getSenderId());
+        message.setId(null);
+        message = messageRepo.save(message);
+        ConversationParticipant sender = conversationParticipantRepo.findByConversationIdAndParticipantId(newMessage.getConversationId(), newMessage.getSenderId());
         LastMessage lastMessage = LastMessage.builder()
+                .senderId(sender.getParticipantId())
                 .sentAt(message.getSendAt())
                 .content(message.getContent())
-                .senderName(sender.getUsername())
+                .senderName(sender.getParticipantName())
                 .notRead(conversationParticipantRepo.findByConversationId(newMessage.getConversationId())
                         .stream()
-                        .filter(id -> id != sender.getId())
+                        .map(ConversationParticipant::getParticipantId)
+                        .filter(id -> !id.equals(sender.getId()))
                         .collect(Collectors.toSet()))
                 .build();
         Conversation conversation = conversationRepo.findById(message.getConversationId()).orElse(null);
         conversation.setLastMessage(lastMessage);
         conversationRepo.save(conversation);
-        return modelMapper.map(message, MessageDTO.class);
+        MessageDTO tmp = modelMapper.map(message, MessageDTO.class);
+        tmp.setSender(modelMapper.map(sender, UserSummary.class));
+        return tmp;
     }
 
     @Override
     public List<MessageDTO> getMessagesByConversationId(String conversationId) {
-        return messageRepository.findByConversationId(conversationId)
+        return messageRepo.findByConversationId(conversationId)
                 .stream()
-                .map(message -> modelMapper.map(message, MessageDTO.class))
+                .map(message -> {
+                    MessageDTO dto = modelMapper.map(message, MessageDTO.class);
+                    ConversationParticipant sender = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, message.getSenderId());
+                    dto.setSender(modelMapper.map(userRepo.findById(message.getSenderId()), UserSummary.class));
+                    dto.getSender().setUsername(sender.getParticipantName());
+                    return dto;
+                })
                 .toList();
+    }
+
+    @Override
+    public String getLastMessageIdByConversationId(String conversationId, long senderId) {
+        return messageRepo.findFirstByConversationIdAndSenderIdOrderBySendAtDesc(conversationId, senderId).getId();
     }
 }
