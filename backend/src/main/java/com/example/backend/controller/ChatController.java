@@ -31,6 +31,6 @@ public class ChatController {
     @MessageMapping("/groupChat")
     public void sendGroupMessage(@Payload NewMessage newMessage) {
         MessageDTO messageDTO = messageService.sendMessage(newMessage);
-        messagingTemplate.convertAndSend("/topic/group." + newMessage.getConversationId(), messageDTO);
+        messagingTemplate.convertAndSend("/topic/group/" + newMessage.getConversationId(), messageDTO);
     }
 }

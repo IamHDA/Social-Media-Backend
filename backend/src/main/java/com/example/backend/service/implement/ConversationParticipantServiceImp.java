@@ -1,9 +1,12 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ParticipantRole;
+import com.example.backend.dto.LastMessage;
+import com.example.backend.entity.mongoDB.Conversation;
 import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mongoDB.ConversationParticipantRepository;
+import com.example.backend.repository.mongoDB.ConversationRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.ConversationParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +22,11 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     private ConversationParticipantRepository conversationParticipantRepo;
     @Autowired
     private UserRepository userRepo;
+    @Autowired
+    private ConversationRepository conversationRepo;
 
     @Override
-    public String changeParticipantRole(String conversationId, long participantId, String role){
+    public String changeRole(String conversationId, long participantId, String role){
         ConversationParticipant conversationParticipant = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, participantId);
         conversationParticipant.setRole(ParticipantRole.valueOf(role));
         conversationParticipantRepo.save(conversationParticipant);
@@ -48,5 +53,22 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
         ConversationParticipant conversationParticipant = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, participantId);
         conversationParticipantRepo.delete(conversationParticipant);
         return "Participant deleted";
+    }
+
+    @Override
+    public String changeNickname(String conversationId, long participantId, String newNickname) {
+        Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
+        LastMessage lastMessage = conversation.getLastMessage();
+        if(lastMessage.getSenderId() == participantId){
+            lastMessage.setSenderName(newNickname);
+            conversation.setLastMessage(lastMessage);
+            conversationRepo.save(conversation);
+        }
+        ConversationParticipant conversationParticipant = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, participantId);
+        conversationParticipant.setNickname(newNickname);
+        System.out.println(newNickname);
+        System.out.println(conversationParticipant.getNickname());
+        conversationParticipantRepo.save(conversationParticipant);
+        return "Nickname changed";
     }
 }

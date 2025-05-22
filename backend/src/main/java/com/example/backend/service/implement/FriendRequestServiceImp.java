@@ -51,7 +51,7 @@ public class FriendRequestServiceImp implements FriendRequestService {
                 notification,
                 sender,
                 recipient,
-                sender.getUsername() + " đã gửi lời mời kết bạn"
+                "đã gửi lời mời kết bạn"
         );
         friendRequestRepo.save(friendRequest);
         return "Request sent";

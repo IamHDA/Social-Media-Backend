@@ -50,18 +50,22 @@ public class MessageServiceImp implements MessageService {
                 .senderId(sender.getParticipantId())
                 .sentAt(message.getSendAt())
                 .content(message.getContent())
-                .senderName(sender.getParticipantName())
+                .senderName(sender.getNickname())
                 .notRead(conversationParticipantRepo.findByConversationId(newMessage.getConversationId())
                         .stream()
                         .map(ConversationParticipant::getParticipantId)
-                        .filter(id -> !id.equals(sender.getId()))
+                        .filter(id -> id != sender.getParticipantId())
                         .collect(Collectors.toSet()))
                 .build();
         Conversation conversation = conversationRepo.findById(message.getConversationId()).orElse(null);
         conversation.setLastMessage(lastMessage);
         conversationRepo.save(conversation);
         MessageDTO tmp = modelMapper.map(message, MessageDTO.class);
-        tmp.setSender(modelMapper.map(sender, UserSummary.class));
+        UserSummary tmpSender = new UserSummary();
+        tmpSender.setId(sender.getParticipantId());
+        tmpSender.setUsername(sender.getNickname());
+        tmpSender.setAvatar(userRepo.findById(sender.getParticipantId()).getAvatar());
+        tmp.setSender(tmpSender);
         return tmp;
     }
 
@@ -73,7 +77,8 @@ public class MessageServiceImp implements MessageService {
                     MessageDTO dto = modelMapper.map(message, MessageDTO.class);
                     ConversationParticipant sender = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, message.getSenderId());
                     dto.setSender(modelMapper.map(userRepo.findById(message.getSenderId()), UserSummary.class));
-                    dto.getSender().setUsername(sender.getParticipantName());
+                    dto.getSender().setUsername(sender.getNickname());
+                    dto.getSender().setAvatar(userRepo.findById(sender.getParticipantId()).getAvatar());
                     return dto;
                 })
                 .toList();

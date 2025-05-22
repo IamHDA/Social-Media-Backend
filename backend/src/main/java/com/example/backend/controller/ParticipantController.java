@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/participant")
@@ -17,13 +18,18 @@ public class ParticipantController {
     public ResponseEntity<String> changeParticipantRole(
             @PathVariable String conversationId,
             @PathVariable long participantId,
-            @RequestBody String role){
-        return ResponseEntity.ok(conversationParticipantService.changeParticipantRole(conversationId, participantId, role));
+            @RequestBody Map<String, String> body){
+        return ResponseEntity.ok(conversationParticipantService.changeRole(conversationId, participantId, body.get("role")));
+    }
+
+    @PutMapping("/changeNickname/{conversationId}/{participantId}")
+    public ResponseEntity<String> changeNickname(@PathVariable String conversationId, @PathVariable long participantId, @RequestBody Map<String, String> body){
+        return ResponseEntity.ok(conversationParticipantService.changeNickname(conversationId, participantId, body.get("nickname")));
     }
 
     @PostMapping("/add/{conversationId}")
-    public ResponseEntity<String> addParticipant(@PathVariable String conversationId,@RequestBody List<Long> participantIds){
-        return ResponseEntity.ok(conversationParticipantService.addParticipantToConversation(conversationId, participantIds));
+    public ResponseEntity<String> addParticipant(@PathVariable String conversationId,@RequestBody Map<String, List<Long>> body){
+        return ResponseEntity.ok(conversationParticipantService.addParticipantToConversation(conversationId, body.get("participantIds")));
     }
 
     @DeleteMapping("/delete/{conversationId}/{participantId}")

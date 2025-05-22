@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.NotificationDTO;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.mySQL.Notification;
@@ -38,6 +39,7 @@ public class NotificationServiceImp implements NotificationService {
                 .map(notificationUser -> {
                     Notification notification = notificationUser.getNotification();
                     NotificationDTO notificationDTO = modelMapper.map(notification, NotificationDTO.class);
+                    if(notification.getType().equals(NotificationType.COMMENT) || notification.getType().equals(NotificationType.MEDIA_COMMENT)) notificationDTO.setPostId(notification.getPost().getId());
                     notificationDTO.setAuthor(modelMapper.map(notification.getUser(), UserSummary.class));
                     return notificationDTO;
                 })

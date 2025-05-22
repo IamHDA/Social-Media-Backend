@@ -60,12 +60,12 @@ public class PostServiceImp implements PostService {
 
     @Override
     public String createPost(List<MultipartFile> files, PostCreate data, MultipartFile file){
-        User user = userService.getCurrentUser();
+        User currentUser = userService.getCurrentUser();
         Post post = new Post();
         PostPrivacy postPrivacy = PostPrivacy.valueOf(data.getPrivacy());
         post.setPrivacy(postPrivacy);
         post.setContent(data.getContent());
-        post.setUser(user);
+        post.setUser(currentUser);
         post.setCreatedAt(LocalDateTime.now());
         Post tmp = postRepo.save(post);
         if(file != null) post.setBackgroundUrl(mediaService.uploadPostBackground(file, tmp.getId()));
@@ -81,31 +81,27 @@ public class PostServiceImp implements PostService {
         if(postPrivacy.equals(PostPrivacy.PUBLIC)){
             recipients = userRepo.findAll();
         }else if (postPrivacy.equals(PostPrivacy.PRIVATE)){
-            recipients = friendshipRepo.findFriendsByUser(user.getId(), Pageable.unpaged());
+            recipients = friendshipRepo.findFriendsByUser(currentUser.getId(), Pageable.unpaged());
         }
         List<PostRecipient> allRecipients = new ArrayList<>(recipients.stream()
                 .map(recipient -> {
-                    PostRecipient postRecipient = new PostRecipient(tmp, recipient);
-                    postRecipient.setUser(recipient);
-                    postRecipient.setPost(tmp);
-                    postRecipient.setReviewed(false);
-                    postRecipient.setDisabled(false);
+                    PostRecipient postRecipient = new PostRecipient(tmp, recipient, currentUser);
                     return postRecipient;
                 })
                 .toList());
-        allRecipients.add(new PostRecipient(tmp, user));
+        allRecipients.add(new PostRecipient(post, currentUser, currentUser));
         postRecipientRepo.saveAll(allRecipients);
         Notification notification = new Notification();
         notification.setPost(tmp);
         notification.setType(NotificationType.POST);
-        notificationService.sendNotificationToFriends(notification, user, user.getUsername() + " Đã tạo 1 bài viết mới: " + data.getContent());
+        notificationService.sendNotificationToFriends(notification, currentUser, currentUser.getUsername() + " Đã tạo 1 bài viết mới: " + data.getContent());
         return "Post created successfully";
     }
 
     @Override
     public String changePostRecipientStatus(long postId, boolean status) {
         User user = userService.getCurrentUser();
-        PostRecipient postRecipient = postRecipientRepo.findByUserIdAndPostId(user.getId(), postId);
+        PostRecipient postRecipient = postRecipientRepo.findByRecipientIdAndPostId(user.getId(), postId);
         postRecipient.setDisabled(status);
         postRecipientRepo.save(postRecipient);
         return "Status changed successfully";
@@ -129,7 +125,7 @@ public class PostServiceImp implements PostService {
         List<PostRecipient> distribution = new ArrayList<>();
         List<Post> posts = postRepo.findByPrivacy(PostPrivacy.PUBLIC);
         for(Post post : posts){
-            distribution.add(new PostRecipient(post, currentUser));
+            distribution.add(new PostRecipient(post, currentUser, post.getUser()));
         }
         postRecipientRepo.saveAll(distribution);
         return "Sync successfully";

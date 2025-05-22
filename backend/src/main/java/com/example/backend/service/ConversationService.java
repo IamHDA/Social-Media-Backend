@@ -14,4 +14,6 @@ public interface ConversationService {
     String changeConversationAvatar(String conversationId, MultipartFile file) throws IOException;
     String deleteConversation(String conversationId);
     String updateLastMessageStatus(String conversationId, long userId);
+
+    String updateChatRoomName(String conversationId, String newName);
 }

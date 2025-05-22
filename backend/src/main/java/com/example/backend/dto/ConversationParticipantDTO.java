@@ -7,7 +7,8 @@ import lombok.Data;
 public class ConversationParticipantDTO {
     private String id;
     private long participantId;
-    private String participantName;
+    private String nickname;
+    private String username;
     private byte[] avatar;
-    private ParticipantRole role;
+    private String role;
 }

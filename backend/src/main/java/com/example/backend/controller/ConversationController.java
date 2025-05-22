@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/conversation")
@@ -37,6 +38,11 @@ public class ConversationController {
     @PutMapping("/lastMessage/updateStatus/{conversationId}/{userId}")
     public ResponseEntity<String> updateLastMessageStatus(@PathVariable String conversationId, @PathVariable long userId){
         return ResponseEntity.ok(conversationService.updateLastMessageStatus(conversationId, userId));
+    }
+
+    @PutMapping("/updateName/{conversationId}")
+    public ResponseEntity<String> updateChatRoomName(@PathVariable String conversationId, @RequestBody Map<String, String> body){
+        return ResponseEntity.ok(conversationService.updateChatRoomName(conversationId, body.get("name")));
     }
 
     @PutMapping("/changeAvatar/{conversationId}")

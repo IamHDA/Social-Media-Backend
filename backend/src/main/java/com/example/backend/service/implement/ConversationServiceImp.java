@@ -61,7 +61,9 @@ public class ConversationServiceImp implements ConversationService {
                                 .stream()
                                 .map(participant -> {
                                     ConversationParticipantDTO participantDTO = modelMapper.map(participant, ConversationParticipantDTO.class);
+                                    participantDTO.setRole(participant.getRole().getDisplayName());
                                     participantDTO.setAvatar(userRepo.findById(participant.getParticipantId()).getAvatar());
+
                                     return participantDTO;
                                 })
                                 .toList())
@@ -97,7 +99,8 @@ public class ConversationServiceImp implements ConversationService {
             participant.setParticipantId(user.getId());
             if(participantId == request.getCreatorId()) participant.setRole(ParticipantRole.CREATOR);
             else participant.setRole(ParticipantRole.MEMBER);
-            participant.setParticipantName(user.getUsername());
+            participant.setNickname(user.getUsername());
+            participant.setUsername(user.getUsername());
             participants.add(participant);
         }
         conversationParticipantRepo.saveAll(participants);
@@ -109,7 +112,7 @@ public class ConversationServiceImp implements ConversationService {
         Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
         conversation.setAvatar(file.getBytes());
         conversationRepo.save(conversation);
-        return "Conversation avatar changed";
+        return Base64.getEncoder().encodeToString(conversation.getAvatar());
     }
 
     @Override
@@ -128,7 +131,16 @@ public class ConversationServiceImp implements ConversationService {
                 .filter(id -> !id.equals(userId))
                 .collect(Collectors.toSet()));
         conversation.setLastMessage(lastMessage);
+        conversationRepo.save(conversation);
         return "Status updated";
+    }
+
+    @Override
+    public String updateChatRoomName(String conversationId, String newName) {
+        Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
+        conversation.setName(newName);
+        conversationRepo.save(conversation);
+        return "Name updated";
     }
 
     private String getPrivateConversationDisplayName(Conversation conversation, User user) {
@@ -136,7 +148,7 @@ public class ConversationServiceImp implements ConversationService {
                 .stream()
                 .filter(participant -> participant.getParticipantId() != user.getId())
                 .findFirst()
-                .map(ConversationParticipant::getParticipantName)
+                .map(ConversationParticipant::getNickname)
                 .orElse(null);
     }
 

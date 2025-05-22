@@ -14,7 +14,8 @@ public class ConversationParticipant {
     private String id;
     private String conversationId;
     private long participantId;
-    private String participantName;
+    private String nickname;
+    private String username;
     private ParticipantRole role;
     private Instant joinedAt;
 }
