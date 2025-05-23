@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -55,7 +56,12 @@ public class PostServiceImp implements PostService {
 
     @Override
     public List<PostDTO> getPostsByUser(long userId) {
-        return convertPostsToDTO(postRepo.findByUser_Id(userId));
+        User user = userService.getCurrentUser();
+        return convertPostsToDTO(postRecipientRepo.findByRecipientAndSender(user, userRepo.findById(userId))
+                .stream()
+                .map(PostRecipient::getPost)
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList());
     }
 
     @Override
@@ -81,7 +87,7 @@ public class PostServiceImp implements PostService {
         if(postPrivacy.equals(PostPrivacy.PUBLIC)){
             recipients = userRepo.findAll();
         }else if (postPrivacy.equals(PostPrivacy.PRIVATE)){
-            recipients = friendshipRepo.findFriendsByUser(currentUser.getId(), Pageable.unpaged());
+            recipients = friendshipRepo.findFriendsByUser(currentUser.getId(), Pageable.unpaged(), "");
         }
         List<PostRecipient> allRecipients = new ArrayList<>(recipients.stream()
                 .map(recipient -> {
@@ -127,6 +133,16 @@ public class PostServiceImp implements PostService {
         for(Post post : posts){
             distribution.add(new PostRecipient(post, currentUser, post.getUser()));
         }
+        postRecipientRepo.saveAll(distribution);
+        return "Sync successfully";
+    }
+
+    @Override
+    public String syncPrivateCode(User sender, User recipient){
+        List<PostRecipient> distribution = postRepo.findByUser(sender)
+                .stream()
+                .map(post -> new PostRecipient(post, recipient, sender))
+                .toList();
         postRecipientRepo.saveAll(distribution);
         return "Sync successfully";
     }

@@ -1,9 +1,12 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.UserSummary;
 import com.example.backend.service.FriendService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/friend")
@@ -14,6 +17,11 @@ public class FriendController {
     @GetMapping("/checkFriendship/{opponentId}")
     public ResponseEntity<Boolean> checkFriendship(@PathVariable int opponentId) {
         return ResponseEntity.ok(friendService.isFriendshipExist(opponentId));
+    }
+
+    @GetMapping("/getList/{userId}")
+    public ResponseEntity<List<UserSummary>> findFriends(@PathVariable long userId, @RequestParam int pageNumber, @RequestParam String keyword) {
+        return ResponseEntity.ok(friendService.getFriendListByUser(userId, pageNumber, keyword));
     }
 
     @PostMapping("/acceptRequest/{senderId}")

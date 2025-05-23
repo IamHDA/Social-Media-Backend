@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.Enum.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class LastMessage {
     private long senderId;
+    private MessageType type;
     private String senderName;
     private String content;
     private Set<Long> notRead;

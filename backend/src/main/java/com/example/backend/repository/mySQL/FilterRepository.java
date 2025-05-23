@@ -1,5 +1,6 @@
 package com.example.backend.repository.mySQL;
 
+import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mySQL.Friendship;
 import com.example.backend.entity.mySQL.Post;
 import com.example.backend.entity.mySQL.PostRecipient;
@@ -7,6 +8,13 @@ import com.example.backend.entity.mySQL.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
+import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
+import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -15,9 +23,11 @@ import java.util.List;
 @Repository
 public class FilterRepository {
     private final EntityManager em;
+    private final MongoTemplate mongoTemplate;
 
-    public FilterRepository(EntityManager em) {
+    public FilterRepository(EntityManager em, MongoTemplate mongoTemplate) {
         this.em = em;
+        this.mongoTemplate = mongoTemplate;
     }
 
     public List<User> searchUser(String keyword, long currentUserId) {
@@ -75,9 +85,8 @@ public class FilterRepository {
                                 cb.equal(friendshipRoot.get("user2").get("id"), currentUserId)
                         )
                 ));
-        System.out.println(friendSubquery);
         Predicate predicate = cb.and(
-                cb.equal(postRecipients.get("user").get("id"), currentUserId),
+                cb.equal(postRecipients.get("recipient").get("id"), currentUserId),
                 cb.equal(postRecipients.get("disabled"), false)
         );
         Expression<Object> priority = cb.selectCase()
@@ -89,4 +98,47 @@ public class FilterRepository {
                 .orderBy(cb.asc(priority), cb.desc(postRoot.get("createdAt")));
         return em.createQuery(query).getResultList();
     }
+
+    public List<ConversationParticipant> findConversationParticipantSortByRole(String conversationId){
+        Aggregation agg = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("conversationId").is(conversationId)),
+                Aggregation.addFields().addField("customPriority")
+                        .withValue(
+                                ConditionalOperators.switchCases(
+                                        ConditionalOperators.Switch.CaseOperator
+                                                .when(ComparisonOperators.Eq.valueOf("role").equalToValue("CREATOR")).then(1),
+                                        ConditionalOperators.Switch.CaseOperator
+                                                .when(ComparisonOperators.Eq.valueOf("role").equalToValue("MOD")).then(2)
+                                ).defaultTo(3)
+                        ).build(),
+
+                Aggregation.sort(Sort.by(
+                        Sort.Order.asc("customPriority"),
+                        Sort.Order.asc("participantName")
+                ))
+        );
+        return mongoTemplate.aggregate(agg, "conversation_participant", ConversationParticipant.class).getMappedResults();
+    }
+
+//    public List<Post> getPostsInProfile(User currentUser, User opponent){
+//        CriteriaBuilder cb = em.getCriteriaBuilder();
+//        CriteriaQuery<Post> query = cb.createQuery(Post.class);
+//
+//        Root<Post> postRoot = query.from(Post.class);
+//        Join<Post, PostRecipient> postRecipients = postRoot.join("postRecipients");
+//
+//        Predicate predicate = cb.and(
+//                cb.equal(postRecipients.get("sender"), opponent),
+//                cb.equal(postRecipients.get("recipient"), currentUser),
+//                cb.equal(postRecipients.get("disabled"), false)
+//        );
+//        Expression<Object> priority = cb.selectCase()
+//                .when(cb.equal(postRecipients.get("isReviewed"), false), cb.literal(0))
+//                .otherwise(cb.literal(1));
+//
+//        query.select(postRoot)
+//                .where(predicate)
+//                .orderBy(cb.asc(priority), cb.desc(postRoot.get("createdAt")));
+//        return em.createQuery(query).getResultList();
+//    }
 }

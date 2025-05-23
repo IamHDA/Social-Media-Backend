@@ -2,6 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.FriendRequestDTO;
+import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.id.FriendRequestId;
 import com.example.backend.entity.mySQL.FriendRequest;
 import com.example.backend.entity.mySQL.Friendship;
@@ -12,12 +13,17 @@ import com.example.backend.repository.mySQL.PostRecipientRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.FriendService;
 import com.example.backend.service.NotificationService;
+import com.example.backend.service.PostService;
 import com.example.backend.service.UserService;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.example.backend.entity.mySQL.Notification;
+
+import java.util.List;
 
 @Service
 public class FriendServiceImp implements FriendService {
@@ -33,6 +39,10 @@ public class FriendServiceImp implements FriendService {
     private NotificationService notificationService;
     @Autowired
     private PostRecipientRepository postRecipientRepo;
+    @Autowired
+    private PostService postService;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Override
     public boolean isFriendshipExist(long opponentId) {
@@ -54,6 +64,8 @@ public class FriendServiceImp implements FriendService {
                 recipient,
                 "đã chấp nhận lời mời kết bạn"
         );
+        postService.syncPrivateCode(sender, recipient);
+        postService.syncPrivateCode(recipient, sender);
         friendshipRepo.save(friendship);
         return "New friend request accepted";
     }
@@ -67,5 +79,14 @@ public class FriendServiceImp implements FriendService {
         postRecipientRepo.deleteAll(postRecipientRepo.findByRecipientAndSender(opponent, currentUser));
         friendshipRepo.delete(friendship);
         return "Friend deleted";
+    }
+
+    @Override
+    public List<UserSummary> getFriendListByUser(long userId, int pageNumber, String keyword) {
+        Pageable pageable = PageRequest.of(pageNumber, 10);
+        return friendshipRepo.findFriendsByUser(userId, pageable, keyword)
+                .stream()
+                .map(user ->  modelMapper.map(user, UserSummary.class))
+                .toList();
     }
 }

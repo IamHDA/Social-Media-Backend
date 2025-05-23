@@ -1,8 +1,9 @@
 package com.example.backend.repository.mongoDB;
 
-import com.example.backend.dto.MessageDTO;
 import com.example.backend.entity.mongoDB.Message;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,6 +11,11 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends MongoRepository<Message, String> {
     List<Message> findByConversationId(String conversationId);
-    Message findFirstByConversationIdAndSenderIdOrderBySendAtDesc(String conversationId, long senderId);
+    @Aggregation(pipeline = {
+            "{ $match: { 'conversation_id': ?0, 'sender._id': ?1 } }",
+            "{ $sort: { 'send_time': -1 } }",
+            "{ $limit: 1 }"
+    })
+    Message findTopByConversationIdAndSenderIdOrderBySendAtDesc(String conversationId, long senderId);
 }
 

@@ -1,15 +1,13 @@
 package com.example.backend.dto;
 
+import com.example.backend.Enum.MessageType;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
-public class NewMessage {
-    private long senderId;
+public class NoticeMessageDTO {
     private long recipientId;
+    private long targetId;
     private String conversationId;
     private String content;
-    private String type;
-    private List<MessageMediaDTO> mediaList;
+    private MessageType type;
 }

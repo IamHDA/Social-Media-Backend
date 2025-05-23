@@ -30,7 +30,7 @@ public class MessageController {
     }
 
     @PostMapping("/upload/file")
-    public ResponseEntity<List<MessageMediaDTO>> uploadFile(@RequestPart("file") List<MultipartFile> files) {
-        return ResponseEntity.ok(mediaService.uploadMessageFiles(files));
+    public ResponseEntity<List<MessageMediaDTO>> uploadFile(@RequestPart("file") List<MultipartFile> files, @RequestPart("conversationId") String conversationId) {
+        return ResponseEntity.ok(mediaService.uploadMessageFiles(files, conversationId));
     }
 }

@@ -1,14 +1,17 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ParticipantRole;
+import com.example.backend.dto.ConversationParticipantDTO;
 import com.example.backend.dto.LastMessage;
 import com.example.backend.entity.mongoDB.Conversation;
 import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mongoDB.ConversationParticipantRepository;
 import com.example.backend.repository.mongoDB.ConversationRepository;
+import com.example.backend.repository.mySQL.FilterRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.ConversationParticipantService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,10 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     private UserRepository userRepo;
     @Autowired
     private ConversationRepository conversationRepo;
+    @Autowired
+    private FilterRepository filterRepo;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Override
     public String changeRole(String conversationId, long participantId, String role){
@@ -34,15 +41,10 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     }
 
     @Override
-    public String addParticipantToConversation(String conversationId, List<Long> participantIds) {
+    public String addParticipants(String conversationId, List<Long> participantIds) {
         Set<ConversationParticipant> participants = new HashSet<>();
         for(Long participantId : participantIds) {
-            User user = userRepo.findById(participantId).orElse(null);
-            ConversationParticipant participant = new ConversationParticipant();
-            participant.setConversationId(conversationId);
-            participant.setParticipantId(user.getId());
-            participant.setRole(ParticipantRole.MEMBER);
-            participants.add(participant);
+            participants.add(createParticipant(conversationId, participantId));
         }
         conversationParticipantRepo.saveAll(participants);
         return "Participants added";
@@ -66,9 +68,37 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
         }
         ConversationParticipant conversationParticipant = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, participantId);
         conversationParticipant.setNickname(newNickname);
-        System.out.println(newNickname);
-        System.out.println(conversationParticipant.getNickname());
         conversationParticipantRepo.save(conversationParticipant);
         return "Nickname changed";
+    }
+
+    @Override
+    public List<ConversationParticipantDTO> getByConversationId(String conversationId) {
+        return filterRepo.findConversationParticipantSortByRole(conversationId)
+                .stream()
+                .map(participant -> {
+                    ConversationParticipantDTO participantDTO = modelMapper.map(participant, ConversationParticipantDTO.class);
+                    participantDTO.setRole(participant.getRole().getDisplayName());
+                    participantDTO.setAvatar(userRepo.findById(participant.getParticipantId()).getAvatar());
+                    return participantDTO;
+                })
+                .toList();
+    }
+
+    @Override
+    public String addParticipant(String conversationId, long participantId) {
+        conversationParticipantRepo.save(createParticipant(conversationId, participantId));
+        return "Participant added";
+    }
+
+    public ConversationParticipant createParticipant(String conversationId, long participantId) {
+        User user = userRepo.findById(participantId);
+        ConversationParticipant participant = new ConversationParticipant();
+        participant.setConversationId(conversationId);
+        participant.setParticipantId(user.getId());
+        participant.setRole(ParticipantRole.MEMBER);
+        participant.setUsername(user.getUsername());
+        participant.setNickname(user.getUsername());
+        return participant;
     }
 }

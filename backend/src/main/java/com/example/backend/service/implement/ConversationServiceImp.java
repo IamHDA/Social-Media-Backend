@@ -11,9 +11,11 @@ import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mongoDB.ConversationParticipantRepository;
 import com.example.backend.repository.mongoDB.ConversationRepository;
+import com.example.backend.repository.mySQL.FilterRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.ConversationService;
 import com.example.backend.service.UserService;
+import jakarta.websocket.Encoder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -38,6 +40,8 @@ public class ConversationServiceImp implements ConversationService {
     private UserRepository userRepo;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private FilterRepository filterRepo;
 
     @Override
     public List<ConversationDTO> getConversationsByCurrentUser() {
@@ -57,13 +61,12 @@ public class ConversationServiceImp implements ConversationService {
                         .name(conversation.getName())
                         .lastMessage(conversation.getLastMessage())
                         .avatar(getConversationAvatar(conversation, user))
-                        .participants(conversationParticipantRepo.findByConversationId(conversation.getId())
+                        .participants(filterRepo.findConversationParticipantSortByRole(conversation.getId())
                                 .stream()
                                 .map(participant -> {
                                     ConversationParticipantDTO participantDTO = modelMapper.map(participant, ConversationParticipantDTO.class);
                                     participantDTO.setRole(participant.getRole().getDisplayName());
                                     participantDTO.setAvatar(userRepo.findById(participant.getParticipantId()).getAvatar());
-
                                     return participantDTO;
                                 })
                                 .toList())
@@ -141,6 +144,18 @@ public class ConversationServiceImp implements ConversationService {
         conversation.setName(newName);
         conversationRepo.save(conversation);
         return "Name updated";
+    }
+
+    @Override
+    public String getConversationAvatarById(String conversationId) {
+        byte[] conversationAvatar = conversationRepo.findById(conversationId).map(Conversation::getAvatar).orElse(null);
+        return Base64.getEncoder().encodeToString(conversationAvatar);
+    }
+
+    @Override
+    public String getConversationName(String conversationId){
+        String conversationName = conversationRepo.findById(conversationId).map(Conversation::getName).orElse(null);
+        return conversationName;
     }
 
     private String getPrivateConversationDisplayName(Conversation conversation, User user) {

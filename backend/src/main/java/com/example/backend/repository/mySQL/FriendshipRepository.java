@@ -18,9 +18,10 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Friendsh
             "WHERE u.id IN ( " +
             "SELECT user2_id FROM friendship WHERE user1_id = :userId " +
             "UNION " +
-            "SELECT user1_id FROM friendship WHERE user2_id = :userId )",
+            "SELECT user1_id FROM friendship WHERE user2_id = :userId ) " +
+            "AND (:keyword = '' OR u.username LIKE %:keyword%)",
             nativeQuery = true)
-    List<User> findFriendsByUser(@Param("userId") Long userId, Pageable pageable);
+    List<User> findFriendsByUser(@Param("userId") Long userId, Pageable pageable, String keyword);
     @Query("""
     select f from Friendship f
     where (f.user1.id = :user1Id and f.user2.id = :user2Id) 

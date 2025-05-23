@@ -17,4 +17,5 @@ public interface PostService {
     String changePostRecipientStatus(long postId, boolean status);
     PostDTO sharePost(long postId, String content, String privacy);
     String syncPublicPost();
+    String syncPrivateCode(User sender, User recipient);
 }

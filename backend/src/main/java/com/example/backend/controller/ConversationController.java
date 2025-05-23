@@ -2,8 +2,10 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.ConversationDTO;
 import com.example.backend.dto.CreateConversationRequest;
+import com.example.backend.dto.MessageMediaDTO;
 import com.example.backend.service.ConversationParticipantService;
 import com.example.backend.service.ConversationService;
+import com.example.backend.service.MediaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -24,10 +26,29 @@ import java.util.Map;
 public class ConversationController {
     @Autowired
     private ConversationService conversationService;
+    @Autowired
+    private MediaService mediaService;
+    public record Request(List<String> types){
+    };
 
     @GetMapping
     public ResponseEntity<List<ConversationDTO>> getConversations(){
         return ResponseEntity.ok(conversationService.getConversationsByCurrentUser());
+    }
+
+    @GetMapping("/getAvatar/{conversationId}")
+    public ResponseEntity<String> getConversationAvatarById(@PathVariable String conversationId){
+        return ResponseEntity.ok(conversationService.getConversationAvatarById(conversationId));
+    }
+
+    @GetMapping("/getName/{conversationId}")
+    public ResponseEntity<String> getConversationNameById(@PathVariable String conversationId){
+        return ResponseEntity.ok(conversationService.getConversationName(conversationId));
+    }
+
+    @GetMapping("/getFiles/{conversationId}")
+    public ResponseEntity<List<MessageMediaDTO>> getConversationFilesById(@PathVariable String conversationId, @RequestBody Request request){
+        return ResponseEntity.ok(mediaService.getMessageFileByConversationId(conversationId, request.types));
     }
 
     @PostMapping("/create")

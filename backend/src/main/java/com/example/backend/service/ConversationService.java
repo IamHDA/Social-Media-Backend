@@ -16,4 +16,7 @@ public interface ConversationService {
     String updateLastMessageStatus(String conversationId, long userId);
 
     String updateChatRoomName(String conversationId, String newName);
+
+    String getConversationAvatarById(String conversationId);
+    String getConversationName(String conversationId);
 }

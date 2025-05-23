@@ -48,7 +48,7 @@ public class NotificationServiceImp implements NotificationService {
 
     @Override
     public void sendNotificationToFriends(Notification notification, User user, String content) {
-        List<User> friends = friendshipRepo.findFriendsByUser(user.getId(), Pageable.unpaged());
+        List<User> friends = friendshipRepo.findFriendsByUser(user.getId(), Pageable.unpaged(), "");
         notification.setNoticeAt(LocalDateTime.now());
         notification.setContent(content);
         notification.setUser(user);

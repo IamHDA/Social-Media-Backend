@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -40,7 +42,7 @@ public class MediaServiceImp implements MediaService {
                 postMedia.setUrl(mediaUrl);
                 postMedia.setFileType(type);
                 postMedia.setPostId(postId);
-                String filePath = "C:/Social-Media-Backend/media/post_media/" + postId + "_" + fileName;
+                String filePath = "C:/Social-Media/Social-Media-Backend/media/post_media/" + postId + "_" + fileName;
                 file.transferTo(new File(filePath));
                 postMedia.setPath(filePath);
                 postMediaRepo.save(postMedia);
@@ -79,7 +81,7 @@ public class MediaServiceImp implements MediaService {
     }
 
     @Override
-    public List<MessageMediaDTO> uploadMessageFiles(List<MultipartFile> files){
+    public List<MessageMediaDTO> uploadMessageFiles(List<MultipartFile> files, String conversationId){
         List<MessageMediaDTO> messageMediaDTOs = new ArrayList<>();
         try {
             for(MultipartFile file : files){
@@ -88,6 +90,8 @@ public class MediaServiceImp implements MediaService {
                 String fileName = file.getOriginalFilename().replace(" ", "_");
                 long fileSize = file.getSize();
                 MessageFile messageFile = new MessageFile();
+                messageFile.setConversationId(conversationId);
+                messageFile.setSendAt(Instant.now());
                 if(type.equals(FileType.IMAGE) || type.equals(FileType.VIDEO)){
                     String url = "http://100.114.40.116:8081/MessageMedia/Image_Video/";
                     messageFile = saveMessageFile(messageMediaDTOs, type, url, fileName, fileSize);
@@ -107,6 +111,18 @@ public class MediaServiceImp implements MediaService {
             log.error(e.getMessage());
         }
         return messageMediaDTOs;
+    }
+
+    @Override
+    public List<MessageMediaDTO> getMessageFileByConversationId(String conversationId, List<String> types) {
+        List<FileType> condition = new ArrayList<>();
+        for(String type : types){
+            condition.add(FileType.valueOf(type.toUpperCase()));
+        }
+        return messageMediaRepo.findByConversationIdAndTypeInOrderBySendAtDesc(conversationId, condition)
+                .stream()
+                .map(file -> modelMapper.map(file, MessageMediaDTO.class))
+                .toList();
     }
 
     private MessageFile saveMessageFile(List<MessageMediaDTO> messageMediaDTOs, FileType type, String url, String fileName, long fileSize){

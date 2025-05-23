@@ -36,7 +36,7 @@ public class UserServiceImp implements UserService {
     public UserProfile getProfile(long id) {
         User user = userRepo.findById(id);
         UserProfile userProfile = modelMapper.map(user, UserProfile.class);
-        userProfile.setFriends(friendshipRepo.findFriendsByUser(id, PageRequest.ofSize(6))
+        userProfile.setFriends(friendshipRepo.findFriendsByUser(id, PageRequest.ofSize(6), "")
                 .stream()
                 .map(friend -> modelMapper.map(friend, UserSummary.class))
                 .toList());

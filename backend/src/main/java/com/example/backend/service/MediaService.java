@@ -9,5 +9,7 @@ public interface MediaService {
     String uploadPostMedia(List<MultipartFile> files, long postId);
     String uploadPostBackground(MultipartFile file, long postId);
     String uploadCommentMedia(MultipartFile file, long commentId);
-    List<MessageMediaDTO> uploadMessageFiles(List<MultipartFile> files);
+    List<MessageMediaDTO> uploadMessageFiles(List<MultipartFile> files, String conversationId);
+
+    List<MessageMediaDTO> getMessageFileByConversationId(String conversationId, List<String> types);
 }

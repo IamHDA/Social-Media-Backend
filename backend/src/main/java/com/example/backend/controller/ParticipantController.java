@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.ConversationParticipantDTO;
 import com.example.backend.service.ConversationParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,13 @@ import java.util.Map;
 public class ParticipantController {
     @Autowired
     private ConversationParticipantService conversationParticipantService;
+    public record ParticipantRequest(List<Long> participantIds) {
+    }
+
+    @GetMapping("/getByConversation/{conversationId}")
+    public ResponseEntity<List<ConversationParticipantDTO>> getByConversation(@PathVariable String conversationId) {
+        return ResponseEntity.ok(conversationParticipantService.getByConversationId(conversationId));
+    }
 
     @PutMapping("/changeRole/{conversationId}/{participantId}")
     public ResponseEntity<String> changeParticipantRole(
@@ -27,9 +35,14 @@ public class ParticipantController {
         return ResponseEntity.ok(conversationParticipantService.changeNickname(conversationId, participantId, body.get("nickname")));
     }
 
+    @PostMapping("/addMany/{conversationId}")
+    public ResponseEntity<String> addParticipants(@PathVariable String conversationId,@RequestBody ParticipantRequest request){
+        return ResponseEntity.ok(conversationParticipantService.addParticipants(conversationId, request.participantIds));
+    }
+
     @PostMapping("/add/{conversationId}")
-    public ResponseEntity<String> addParticipant(@PathVariable String conversationId,@RequestBody Map<String, List<Long>> body){
-        return ResponseEntity.ok(conversationParticipantService.addParticipantToConversation(conversationId, body.get("participantIds")));
+    public ResponseEntity<String> addParticipant(@PathVariable String conversationId, @RequestBody Map<String, Long> body){
+        return ResponseEntity.ok(conversationParticipantService.addParticipant(conversationId, body.get("participantId")));
     }
 
     @DeleteMapping("/delete/{conversationId}/{participantId}")

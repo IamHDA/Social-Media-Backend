@@ -1,5 +1,7 @@
 package com.example.backend.entity.mongoDB;
 
+import com.example.backend.Enum.MessageType;
+import com.example.backend.dto.UserSummary;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,10 +17,12 @@ public class Message {
     private String id;
     @Field("conversation_id")
     private String conversationId;
-    @Field("sender_id")
-    private long senderId;
     private String content;
     @Field("send_time")
     private Instant sendAt;
+    @Field("message_type")
+    private MessageType type;
+    @Field("sender")
+    private UserSummary sender;
     private List<MessageFile> mediaList;
 }
