@@ -11,7 +11,7 @@ import java.util.Set;
 @Repository
 public interface ConversationParticipantRepository extends MongoRepository<ConversationParticipant, String> {
     ConversationParticipant findByConversationIdAndParticipantId(String conversationId, long participantId);
-    @Query(value = "{ 'conversationId': ?0 }")
+    @Query(value = "{ 'conversationId': ?0}")
     Set<ConversationParticipant> findByConversationId(String conversationId);
     @Query(value = "{'participantId': ?0}")
     Set<ConversationParticipant> findByParticipantId(long participantId);

@@ -15,6 +15,7 @@ import java.time.Instant;
 public class MessageFile {
     @Id
     private String id;
+    @Field("conversation_id")
     private String conversationId;
     private FileType type;
     private String url;

@@ -11,5 +11,5 @@ public interface MediaService {
     String uploadCommentMedia(MultipartFile file, long commentId);
     List<MessageMediaDTO> uploadMessageFiles(List<MultipartFile> files, String conversationId);
 
-    List<MessageMediaDTO> getMessageFileByConversationId(String conversationId, List<String> types);
+    List<MessageMediaDTO> getMessageFileByConversationId(String conversationId, List<String> types, int pageNumber);
 }

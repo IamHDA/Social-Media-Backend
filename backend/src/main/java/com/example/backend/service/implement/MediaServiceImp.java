@@ -10,6 +10,8 @@ import com.example.backend.service.MediaService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -90,17 +92,15 @@ public class MediaServiceImp implements MediaService {
                 String fileName = file.getOriginalFilename().replace(" ", "_");
                 long fileSize = file.getSize();
                 MessageFile messageFile = new MessageFile();
-                messageFile.setConversationId(conversationId);
-                messageFile.setSendAt(Instant.now());
                 if(type.equals(FileType.IMAGE) || type.equals(FileType.VIDEO)){
                     String url = "http://100.114.40.116:8081/MessageMedia/Image_Video/";
-                    messageFile = saveMessageFile(messageMediaDTOs, type, url, fileName, fileSize);
+                    messageFile = saveMessageFile(messageMediaDTOs, type, url, fileName, fileSize, conversationId);
                     String filePath = "C:/Social-Media/Social-Media-Backend/media/message_media/image_video/" + messageFile.getId() + "_" + fileName;
                     file.transferTo(new File(filePath));
                     messageFile.setPath(filePath);
                 }else if(type.equals(FileType.APPLICATION)){
                     String url = "http://100.114.40.116:8081/MessageMedia/Application/";
-                    messageFile = saveMessageFile(messageMediaDTOs, type, url, fileName, fileSize);
+                    messageFile = saveMessageFile(messageMediaDTOs, type, url, fileName, fileSize, conversationId);
                     String filePath = "C:/Social-Media/Social-Media-Backend/media/message_media/application/" + messageFile.getId() + "_" + fileName;
                     file.transferTo(new File(filePath));
                     messageFile.setPath(filePath);
@@ -114,23 +114,26 @@ public class MediaServiceImp implements MediaService {
     }
 
     @Override
-    public List<MessageMediaDTO> getMessageFileByConversationId(String conversationId, List<String> types) {
+    public List<MessageMediaDTO> getMessageFileByConversationId(String conversationId, List<String> types, int pageNumber) {
         List<FileType> condition = new ArrayList<>();
         for(String type : types){
             condition.add(FileType.valueOf(type.toUpperCase()));
         }
-        return messageMediaRepo.findByConversationIdAndTypeInOrderBySendAtDesc(conversationId, condition)
+        Pageable pageable = PageRequest.of(pageNumber, 15);
+        return messageMediaRepo.findByConversationIdAndTypeInOrderBySendAtDesc(conversationId, condition, pageable)
                 .stream()
                 .map(file -> modelMapper.map(file, MessageMediaDTO.class))
                 .toList();
     }
 
-    private MessageFile saveMessageFile(List<MessageMediaDTO> messageMediaDTOs, FileType type, String url, String fileName, long fileSize){
+    private MessageFile saveMessageFile(List<MessageMediaDTO> messageMediaDTOs, FileType type, String url, String fileName, long fileSize, String conversationId){
         MessageFile messageFile = messageMediaRepo.save(new MessageFile(type));
         String mediaUrl = url + messageFile.getId() + "_" + fileName;
         messageFile.setUrl(mediaUrl);
         messageFile.setName(fileName);
         messageFile.setSize(fileSize / 1024.0);
+        messageFile.setConversationId(conversationId);
+        messageFile.setSendAt(Instant.now());
         messageFile = messageMediaRepo.save(messageFile);
         messageMediaDTOs.add(modelMapper.map(messageFile, MessageMediaDTO.class));
         return messageFile;

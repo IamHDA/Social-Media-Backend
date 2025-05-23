@@ -2,10 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ConversationType;
 import com.example.backend.Enum.ParticipantRole;
-import com.example.backend.dto.ConversationDTO;
-import com.example.backend.dto.ConversationParticipantDTO;
-import com.example.backend.dto.CreateConversationRequest;
-import com.example.backend.dto.LastMessage;
+import com.example.backend.dto.*;
 import com.example.backend.entity.mongoDB.Conversation;
 import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mySQL.User;
@@ -49,35 +46,39 @@ public class ConversationServiceImp implements ConversationService {
         List<Conversation> conversations = conversationParticipantRepo.findByParticipantId(user.getId())
                 .stream()
                 .map(conversationParticipant -> conversationRepo.findById(conversationParticipant.getConversationId()).orElse(null))
+                .filter(conversation -> conversation.getLastMessage() != null)
+                .sorted(Comparator.comparing(
+                        (Conversation c) -> c.getLastMessage().getSentAt(),
+                        Comparator.reverseOrder()
+                ))
+                .collect(Collectors.toList());
+        return convertConversationsToConversationDtoList(conversations, user);
+    }
+
+    @Override
+    public ConversationDTO getConversationById(String conversationId){
+        User user = userService.getCurrentUser();
+        Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
+        return convertConversationToConversationDTO(conversation, user);
+    }
+
+    @Override
+    public List<ConversationDTO> getUnReadConversationsByCurrentUser(){
+        User user = userService.getCurrentUser();
+        List<Conversation> conversations = conversationParticipantRepo.findByParticipantId(user.getId())
+                .stream()
+                .map(conversationParticipant -> conversationRepo.findById(conversationParticipant.getConversationId()).orElse(null))
+                .filter(conversation -> conversation.getLastMessage() != null && conversation.getLastMessage().getNotRead().contains(user.getId()))
                 .sorted(Comparator.comparing(
                         (Conversation c) -> c.getLastMessage() != null ? c.getLastMessage().getSentAt() : null,
                         Comparator.nullsLast(Comparator.reverseOrder())
                 ))
                 .toList();
-        return conversations
-                .stream()
-                .map(conversation -> ConversationDTO.builder()
-                        .id(conversation.getId())
-                        .name(conversation.getName())
-                        .lastMessage(conversation.getLastMessage())
-                        .avatar(getConversationAvatar(conversation, user))
-                        .participants(filterRepo.findConversationParticipantSortByRole(conversation.getId())
-                                .stream()
-                                .map(participant -> {
-                                    ConversationParticipantDTO participantDTO = modelMapper.map(participant, ConversationParticipantDTO.class);
-                                    participantDTO.setRole(participant.getRole().getDisplayName());
-                                    participantDTO.setAvatar(userRepo.findById(participant.getParticipantId()).getAvatar());
-                                    return participantDTO;
-                                })
-                                .toList())
-                        .type(conversation.getType())
-                        .displayName(getPrivateConversationDisplayName(conversation, user))
-                        .build())
-                .toList();
+        return convertConversationsToConversationDtoList(conversations, user);
     }
 
     @Override
-    public String createConversation(CreateConversationRequest request){
+    public ConversationDTO createConversation(CreateConversationRequest request){
         Conversation conversation = new Conversation();
         conversation.setCreatedAt(Instant.now());
         conversation.setName(request.getName());
@@ -90,24 +91,37 @@ public class ConversationServiceImp implements ConversationService {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
-        if(request.getType().equals("PRIVATE")) conversation.setMaxSize(2);
-        if(request.getType().equals("PUBLIC")) conversation.setMaxSize(50);
+        if(request.getType().equals("PRIVATE")) {
+            conversation.setMaxSize(2);
+            conversation.setName(null);
+        }else conversation.setMaxSize(50);
+        request.getParticipantIds().add(request.getCreatorId());
+        conversation.setParticipantIds(request.getParticipantIds());
         String conversationId = conversationRepo.save(conversation).getId();
         Set<ConversationParticipant> participants = new HashSet<>();
-        request.getParticipantIds().add(request.getCreatorId());
+        ConversationDTO conversationDTO = modelMapper.map(conversation, ConversationDTO.class);
+        List<ConversationParticipantDTO> participantsDTO = new ArrayList<>();
         for(Long participantId : request.getParticipantIds()) {
             User user = userRepo.findById(participantId).orElse(null);
             ConversationParticipant participant = new ConversationParticipant();
             participant.setConversationId(conversationId);
             participant.setParticipantId(user.getId());
             if(participantId == request.getCreatorId()) participant.setRole(ParticipantRole.CREATOR);
-            else participant.setRole(ParticipantRole.MEMBER);
+            else {
+                participant.setRole(ParticipantRole.MEMBER);
+                if(conversation.getType().equals(ConversationType.PRIVATE)) {
+                    conversationDTO.setName(user.getUsername());
+                    conversationDTO.setAvatar(user.getAvatar());
+                }
+            }
             participant.setNickname(user.getUsername());
             participant.setUsername(user.getUsername());
+            participantsDTO.add(modelMapper.map(participant, ConversationParticipantDTO.class));
             participants.add(participant);
         }
+        conversationDTO.setParticipants(participantsDTO);
         conversationParticipantRepo.saveAll(participants);
-        return conversationId;
+        return conversationDTO;
     }
 
     @Override
@@ -154,11 +168,67 @@ public class ConversationServiceImp implements ConversationService {
 
     @Override
     public String getConversationName(String conversationId){
-        String conversationName = conversationRepo.findById(conversationId).map(Conversation::getName).orElse(null);
-        return conversationName;
+        return conversationRepo.findById(conversationId).map(Conversation::getName).orElse(null);
+    }
+
+    @Override
+    public List<SearchConversationDTO> searchConversations(String keyword) {
+        User currentUser = userService.getCurrentUser();
+        List<SearchConversationDTO> conversations = new ArrayList<>(filterRepo.searchUser(keyword, currentUser.getId())
+                .stream()
+                .map(user -> {
+                    SearchConversationDTO searchConversationDTO = new SearchConversationDTO();
+                    Conversation conversation = conversationRepo.findByTypeAndParticipantIds(ConversationType.PRIVATE, List.of(currentUser.getId(), user.getId()));
+                    if(conversation != null) searchConversationDTO.setConversationId(conversation.getId());
+                    else searchConversationDTO.setConversationId(null);
+                    searchConversationDTO.setUserId(user.getId());
+                    searchConversationDTO.setAvatar(Base64.getEncoder().encodeToString(user.getAvatar()));
+                    searchConversationDTO.setDisplayName(user.getUsername());
+                    return searchConversationDTO;
+                })
+                .toList());
+        conversations.addAll(conversationRepo.findByNameContainingIgnoreCase(keyword)
+                .stream()
+                .map(conversation -> {
+                    SearchConversationDTO searchConversationDTO = new SearchConversationDTO();
+                    searchConversationDTO.setConversationId(conversation.getId());
+                    searchConversationDTO.setName(conversation.getName());
+                    searchConversationDTO.setAvatar(Base64.getEncoder().encodeToString(conversation.getAvatar()));
+                    return searchConversationDTO;
+                })
+                .toList());
+        return conversations;
+    }
+
+    private List<ConversationDTO> convertConversationsToConversationDtoList(List<Conversation> conversations, User user){
+        return conversations
+                .stream()
+                .map(conversation -> convertConversationToConversationDTO(conversation, user))
+                .toList();
+    }
+
+    private ConversationDTO convertConversationToConversationDTO(Conversation conversation, User user){
+        return ConversationDTO.builder()
+                .id(conversation.getId())
+                .name(conversation.getName())
+                .lastMessage(conversation.getLastMessage())
+                .avatar(getConversationAvatar(conversation))
+                .participants(filterRepo.findConversationParticipantSortByRole(conversation.getId())
+                        .stream()
+                        .map(participant -> {
+                            ConversationParticipantDTO participantDTO = modelMapper.map(participant, ConversationParticipantDTO.class);
+                            participantDTO.setRole(participant.getRole().getDisplayName());
+                            participantDTO.setAvatar(userRepo.findById(participant.getParticipantId()).getAvatar());
+                            return participantDTO;
+                        })
+                        .toList())
+                .type(conversation.getType())
+                .displayName(getPrivateConversationDisplayName(conversation, user))
+                .build();
     }
 
     private String getPrivateConversationDisplayName(Conversation conversation, User user) {
+        if(conversation.getType().equals(ConversationType.GROUP)) return "";
         return conversationParticipantRepo.findByConversationId(conversation.getId())
                 .stream()
                 .filter(participant -> participant.getParticipantId() != user.getId())
@@ -167,14 +237,10 @@ public class ConversationServiceImp implements ConversationService {
                 .orElse(null);
     }
 
-    private byte[] getConversationAvatar(Conversation conversation, User user) {
+    private byte[] getConversationAvatar(Conversation conversation) {
         if(conversation.getType().equals(ConversationType.PRIVATE)) {
-            Long recipientId = conversationParticipantRepo.findByConversationId(conversation.getId())
-                    .stream()
-                    .map(ConversationParticipant::getParticipantId)
-                    .filter(id -> !id.equals(user.getId()))
-                    .findFirst()
-                    .orElse(null);
+            Long recipientId = conversation.getParticipantIds().get(0);
+            System.out.println(recipientId);
             return userRepo.findById(recipientId).get().getAvatar();
         }
         return conversation.getAvatar();

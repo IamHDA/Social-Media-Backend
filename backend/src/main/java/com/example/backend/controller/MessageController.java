@@ -31,6 +31,7 @@ public class MessageController {
 
     @PostMapping("/upload/file")
     public ResponseEntity<List<MessageMediaDTO>> uploadFile(@RequestPart("file") List<MultipartFile> files, @RequestPart("conversationId") String conversationId) {
+        System.out.println(conversationId);
         return ResponseEntity.ok(mediaService.uploadMessageFiles(files, conversationId));
     }
 }

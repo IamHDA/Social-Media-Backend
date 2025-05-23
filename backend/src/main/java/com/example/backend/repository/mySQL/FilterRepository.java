@@ -51,17 +51,20 @@ public class FilterRepository {
         Expression<Object> priority = cb.selectCase()
                 .when(cb.exists(friendSubquery), cb.literal(0))
                 .otherwise(cb.literal(1));
-        Predicate userCondition = cb.and(
-                cb.notEqual(userRoot.get("id"), currentUserId),
-                cb.or(
-                        cb.like(cb.lower(userRoot.get("username")), "%" + keyword.toLowerCase() + "%"),
-                        cb.like(cb.lower(userRoot.get("email")), "%" + keyword.toLowerCase() + "%"),
-                        cb.like(cb.lower(userRoot.get("bio")), "%" + keyword.toLowerCase() + "%")
-                ),
-                cb.isNotNull(userRoot.get("id"))
-        );
+        Predicate predicate;
+        if(keyword.isBlank()) predicate = cb.conjunction();
+        else{
+            predicate = cb.and(
+                    cb.notEqual(userRoot.get("id"), currentUserId),
+                    cb.or(
+                            cb.like(cb.lower(userRoot.get("username")), "%" + keyword.toLowerCase() + "%"),
+                            cb.like(cb.lower(userRoot.get("email")), "%" + keyword.toLowerCase() + "%")
+                    ),
+                    cb.isNotNull(userRoot.get("id"))
+            );
+        }
         query.select(userRoot)
-                .where(userCondition)
+                .where(predicate)
                 .orderBy(cb.asc(priority), cb.asc(userRoot.get("username")));
         return em.createQuery(query).getResultList();
     }

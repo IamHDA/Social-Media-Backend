@@ -1,8 +1,10 @@
 package com.example.backend.controller;
 
+import com.example.backend.Enum.FileType;
 import com.example.backend.dto.ConversationDTO;
 import com.example.backend.dto.CreateConversationRequest;
 import com.example.backend.dto.MessageMediaDTO;
+import com.example.backend.dto.SearchConversationDTO;
 import com.example.backend.service.ConversationParticipantService;
 import com.example.backend.service.ConversationService;
 import com.example.backend.service.MediaService;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -28,12 +31,25 @@ public class ConversationController {
     private ConversationService conversationService;
     @Autowired
     private MediaService mediaService;
-    public record Request(List<String> types){
-    };
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<List<ConversationDTO>> getConversations(){
         return ResponseEntity.ok(conversationService.getConversationsByCurrentUser());
+    }
+
+    @GetMapping("/{conversationId}")
+    public ResponseEntity<ConversationDTO> getConversation(@PathVariable String conversationId){
+        return ResponseEntity.ok(conversationService.getConversationById(conversationId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<SearchConversationDTO>> searchConversations(@RequestParam String keyword){
+        return ResponseEntity.ok(conversationService.searchConversations(keyword));
+    }
+
+    @GetMapping("/getNotRead")
+    public ResponseEntity<List<ConversationDTO>> getNotReadConversations(){
+        return ResponseEntity.ok(conversationService.getUnReadConversationsByCurrentUser());
     }
 
     @GetMapping("/getAvatar/{conversationId}")
@@ -47,12 +63,13 @@ public class ConversationController {
     }
 
     @GetMapping("/getFiles/{conversationId}")
-    public ResponseEntity<List<MessageMediaDTO>> getConversationFilesById(@PathVariable String conversationId, @RequestBody Request request){
-        return ResponseEntity.ok(mediaService.getMessageFileByConversationId(conversationId, request.types));
+    public ResponseEntity<List<MessageMediaDTO>> getConversationFilesById(@PathVariable String conversationId, @RequestParam String types, @RequestParam int pageNumber){
+        List<String> fileTypes = Arrays.asList(types.split(","));
+        return ResponseEntity.ok(mediaService.getMessageFileByConversationId(conversationId, fileTypes, pageNumber));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<String> createConversation(@RequestBody CreateConversationRequest request){
+    public ResponseEntity<ConversationDTO> createConversation(@RequestBody CreateConversationRequest request){
         return ResponseEntity.ok(conversationService.createConversation(request));
     }
 

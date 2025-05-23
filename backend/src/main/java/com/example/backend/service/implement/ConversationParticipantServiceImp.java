@@ -43,9 +43,12 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     @Override
     public String addParticipants(String conversationId, List<Long> participantIds) {
         Set<ConversationParticipant> participants = new HashSet<>();
+        Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
         for(Long participantId : participantIds) {
             participants.add(createParticipant(conversationId, participantId));
+            conversation.getParticipantIds().add(participantId);
         }
+        conversationRepo.save(conversation);
         conversationParticipantRepo.saveAll(participants);
         return "Participants added";
     }
@@ -53,6 +56,9 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     @Override
     public String deleteParticipant(String conversationId, long participantId) {
         ConversationParticipant conversationParticipant = conversationParticipantRepo.findByConversationIdAndParticipantId(conversationId, participantId);
+        Conversation conversation = conversationRepo.findById(conversationParticipant.getConversationId()).orElse(null);
+        conversation.getParticipantIds().remove(participantId);
+        conversationRepo.save(conversation);
         conversationParticipantRepo.delete(conversationParticipant);
         return "Participant deleted";
     }
@@ -87,6 +93,9 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
 
     @Override
     public String addParticipant(String conversationId, long participantId) {
+        Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
+        conversation.getParticipantIds().add(participantId);
+        conversationRepo.save(conversation);
         conversationParticipantRepo.save(createParticipant(conversationId, participantId));
         return "Participant added";
     }

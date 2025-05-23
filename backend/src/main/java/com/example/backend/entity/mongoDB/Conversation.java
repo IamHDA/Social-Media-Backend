@@ -24,4 +24,5 @@ public class Conversation {
     private ConversationType type;
     private Instant createdAt;
     private LastMessage lastMessage;
+    private List<Long> participantIds;
 }
