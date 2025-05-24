@@ -10,6 +10,7 @@ public class NotificationDTO {
     private long id;
     private NotificationType type;
     private long postId;
+    private String mediaId;
     private String content;
     private boolean read;
     private UserSummary author;

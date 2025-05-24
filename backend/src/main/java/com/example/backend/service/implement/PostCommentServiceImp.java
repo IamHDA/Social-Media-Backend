@@ -99,7 +99,8 @@ public class PostCommentServiceImp implements PostCommentService {
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
         notification.setPostComment(comment);
-        notificationService.sendPersonalNotification(notification, currentUser, post.getUser(), currentUser.getUsername() + " đã bình luận: " + content);
+        notification.setPost(post);
+        notificationService.sendPersonalNotification(notification, currentUser, post.getUser(), " đã bình luận: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;
@@ -126,7 +127,7 @@ public class PostCommentServiceImp implements PostCommentService {
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
         notification.setPostComment(comment);
-        notificationService.sendPersonalNotification(notification, currentUser, parentComment.getUser(), currentUser.getUsername() + " đã phản hồi: " + content);
+        notificationService.sendPersonalNotification(notification, currentUser, parentComment.getUser(), " đã phản hồi: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;

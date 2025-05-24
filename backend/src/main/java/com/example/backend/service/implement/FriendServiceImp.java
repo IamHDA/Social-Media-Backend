@@ -1,12 +1,10 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
-import com.example.backend.dto.FriendRequestDTO;
+import com.example.backend.Enum.PostPrivacy;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.id.FriendRequestId;
-import com.example.backend.entity.mySQL.FriendRequest;
-import com.example.backend.entity.mySQL.Friendship;
-import com.example.backend.entity.mySQL.User;
+import com.example.backend.entity.mySQL.*;
 import com.example.backend.repository.mySQL.FriendRequestRepository;
 import com.example.backend.repository.mySQL.FriendshipRepository;
 import com.example.backend.repository.mySQL.PostRecipientRepository;
@@ -21,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import com.example.backend.entity.mySQL.Notification;
 
 import java.util.List;
 
@@ -64,8 +61,8 @@ public class FriendServiceImp implements FriendService {
                 recipient,
                 "đã chấp nhận lời mời kết bạn"
         );
-        postService.syncPrivateCode(sender, recipient);
-        postService.syncPrivateCode(recipient, sender);
+        postService.syncPrivatePost(sender, recipient);
+        postService.syncPrivatePost(recipient, sender);
         friendshipRepo.save(friendship);
         return "New friend request accepted";
     }
@@ -76,7 +73,7 @@ public class FriendServiceImp implements FriendService {
         User currentUser = userService.getCurrentUser();
         Friendship friendship = friendshipRepo.findByUserId(currentUser.getId(), friendId).orElse(null);
         User opponent = friendship.getUser1() != currentUser ? friendship.getUser1() : friendship.getUser2();
-        postRecipientRepo.deleteAll(postRecipientRepo.findByRecipientAndSender(opponent, currentUser));
+        postRecipientRepo.deletePrivatePostByUser1AndUser2(currentUser, opponent);
         friendshipRepo.delete(friendship);
         return "Friend deleted";
     }

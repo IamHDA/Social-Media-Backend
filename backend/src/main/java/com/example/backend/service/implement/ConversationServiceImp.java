@@ -78,15 +78,19 @@ public class ConversationServiceImp implements ConversationService {
     }
 
     @Override
-    public ConversationDTO createConversation(CreateConversationRequest request){
+    public ConversationDTO createConversation(CreateConversationRequest request, MultipartFile image){
         Conversation conversation = new Conversation();
         conversation.setCreatedAt(Instant.now());
         conversation.setName(request.getName());
         conversation.setType(ConversationType.valueOf(request.getType()));
         try {
             if(request.getType().equals("GROUP")){
-                ClassPathResource avatarResource = new ClassPathResource("static/default-chat-room-avatar.png");
-                conversation.setAvatar(Files.readAllBytes(avatarResource.getFile().toPath()));
+                if(image == null){
+                    ClassPathResource avatarResource = new ClassPathResource("static/default-chat-room-avatar.png");
+                    conversation.setAvatar(Files.readAllBytes(avatarResource.getFile().toPath()));
+                }else{
+                    conversation.setAvatar(image.getBytes());
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
@@ -97,11 +101,13 @@ public class ConversationServiceImp implements ConversationService {
         }else conversation.setMaxSize(50);
         request.getParticipantIds().add(request.getCreatorId());
         conversation.setParticipantIds(request.getParticipantIds());
+        System.out.println(conversation.getParticipantIds());
         String conversationId = conversationRepo.save(conversation).getId();
         Set<ConversationParticipant> participants = new HashSet<>();
         ConversationDTO conversationDTO = modelMapper.map(conversation, ConversationDTO.class);
         List<ConversationParticipantDTO> participantsDTO = new ArrayList<>();
-        for(Long participantId : request.getParticipantIds()) {
+        for(Long participantId : conversation.getParticipantIds()) {
+            System.out.println("Tao nhom" + participantId);
             User user = userRepo.findById(participantId).orElse(null);
             ConversationParticipant participant = new ConversationParticipant();
             participant.setConversationId(conversationId);
@@ -119,6 +125,10 @@ public class ConversationServiceImp implements ConversationService {
             participantsDTO.add(modelMapper.map(participant, ConversationParticipantDTO.class));
             participants.add(participant);
         }
+        System.out.println("Đây là participants" + participants
+                .stream()
+                .map(ConversationParticipant::getParticipantId)
+                .toList());
         conversationDTO.setParticipants(participantsDTO);
         conversationParticipantRepo.saveAll(participants);
         return conversationDTO;
@@ -208,6 +218,7 @@ public class ConversationServiceImp implements ConversationService {
     }
 
     private ConversationDTO convertConversationToConversationDTO(Conversation conversation, User user){
+        System.out.println(conversation.getName());
         return ConversationDTO.builder()
                 .id(conversation.getId())
                 .name(conversation.getName())

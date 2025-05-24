@@ -1,23 +1,17 @@
 package com.example.backend.repository.mySQL;
 
 import com.example.backend.entity.mongoDB.ConversationParticipant;
-import com.example.backend.entity.mySQL.Friendship;
-import com.example.backend.entity.mySQL.Post;
-import com.example.backend.entity.mySQL.PostRecipient;
-import com.example.backend.entity.mySQL.User;
+import com.example.backend.entity.mySQL.*;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
 import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -102,6 +96,23 @@ public class FilterRepository {
         return em.createQuery(query).getResultList();
     }
 
+    public List<Notification> findNotificationByUserSortByNoticeTime(User user){
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Notification> query = cb.createQuery(Notification.class);
+        Root<Notification> notificationRoot = query.from(Notification.class);
+        Join<Notification, NotificationUser> notificationUsers = notificationRoot.join("notificationUsers");
+
+        Predicate predicate = cb.and(cb.equal(notificationUsers.get("user"), user));
+
+        Expression<Object> priority = cb.selectCase()
+                .when(cb.equal(notificationUsers.get("read"), false), cb.literal(0))
+                .otherwise(cb.literal(1));
+        query.select(notificationRoot)
+                .where(predicate)
+                .orderBy(cb.asc(priority), cb.desc(notificationRoot.get("noticeAt")));
+        return em.createQuery(query).getResultList();
+    }
+
     public List<ConversationParticipant> findConversationParticipantSortByRole(String conversationId){
         Aggregation agg = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("conversationId").is(conversationId)),
@@ -122,7 +133,6 @@ public class FilterRepository {
         );
         return mongoTemplate.aggregate(agg, "conversation_participant", ConversationParticipant.class).getMappedResults();
     }
-
 //    public List<Post> getPostsInProfile(User currentUser, User opponent){
 //        CriteriaBuilder cb = em.getCriteriaBuilder();
 //        CriteriaQuery<Post> query = cb.createQuery(Post.class);

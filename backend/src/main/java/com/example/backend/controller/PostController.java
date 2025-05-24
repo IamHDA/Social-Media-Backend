@@ -28,11 +28,13 @@ public class PostController {
 
     @GetMapping("/newestPost")
     public ResponseEntity<List<PostDTO>> getNewestPosts(){
+        System.out.println("Loi o 2");
         return ResponseEntity.ok(postService.getNewestPost());
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<PostDTO>> getPostsByUserId(@PathVariable long userId){
+        System.out.println("Loi o 1");
         return ResponseEntity.ok(postService.getPostsByUser(userId));
     }
 

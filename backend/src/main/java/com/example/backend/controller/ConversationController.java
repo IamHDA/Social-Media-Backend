@@ -69,8 +69,8 @@ public class ConversationController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ConversationDTO> createConversation(@RequestBody CreateConversationRequest request){
-        return ResponseEntity.ok(conversationService.createConversation(request));
+    public ResponseEntity<ConversationDTO> createConversation(@RequestPart("data") CreateConversationRequest data, @RequestPart(value = "image", required = false) MultipartFile image){
+        return ResponseEntity.ok(conversationService.createConversation(data, image));
     }
 
     @PutMapping("/lastMessage/updateStatus/{conversationId}/{userId}")

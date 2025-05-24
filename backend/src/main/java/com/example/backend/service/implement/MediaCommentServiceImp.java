@@ -97,7 +97,7 @@ public class MediaCommentServiceImp implements MediaCommentService {
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
         notification.setPostMediaComment(comment);
-        notificationService.sendPersonalNotification(notification, currentUser, postAuthor, currentUser.getUsername() + " đã bình luận: " + content);
+        notificationService.sendPersonalNotification(notification, currentUser, postAuthor, " đã bình luận: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;
@@ -121,7 +121,7 @@ public class MediaCommentServiceImp implements MediaCommentService {
         Notification notification = new Notification();
         if(content == null) content = "1 ảnh";
         notification.setType(NotificationType.COMMENT);
-        notificationService.sendPersonalNotification(notification, currentUser, parentComment.getUser(), currentUser.getUsername() + " đã phản hồi: " + content);
+        notificationService.sendPersonalNotification(notification, currentUser, parentComment.getUser(), " đã phản hồi: " + content);
         CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
         commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
         return commentDTO;

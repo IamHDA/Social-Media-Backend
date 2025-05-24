@@ -6,6 +6,7 @@ import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.mySQL.Notification;
 import com.example.backend.entity.mySQL.NotificationUser;
 import com.example.backend.entity.mySQL.User;
+import com.example.backend.repository.mySQL.FilterRepository;
 import com.example.backend.repository.mySQL.FriendshipRepository;
 import com.example.backend.repository.mySQL.NotificationRepository;
 import com.example.backend.repository.mySQL.NotificationUserRepository;
@@ -30,16 +31,18 @@ public class NotificationServiceImp implements NotificationService {
     @Autowired
     private UserService userService;
     @Autowired
+    private FilterRepository filterRepo;
+    @Autowired
     private ModelMapper modelMapper;
 
     @Override
     public List<NotificationDTO> getNotificationsByUser() {
-        return notificationUserRepo.findByUserAndReadOrderByNotification_NoticeAtDesc(userService.getCurrentUser(), false)
+        return filterRepo.findNotificationByUserSortByNoticeTime(userService.getCurrentUser())
                 .stream()
-                .map(notificationUser -> {
-                    Notification notification = notificationUser.getNotification();
+                .map(notification -> {
                     NotificationDTO notificationDTO = modelMapper.map(notification, NotificationDTO.class);
-                    if(notification.getType().equals(NotificationType.COMMENT) || notification.getType().equals(NotificationType.MEDIA_COMMENT)) notificationDTO.setPostId(notification.getPost().getId());
+                    if(notification.getType().equals(NotificationType.COMMENT)) notificationDTO.setPostId(notification.getPost().getId());
+                    else if(notification.getType().equals(NotificationType.MEDIA_COMMENT)) notificationDTO.setMediaId(notification.getPostMediaComment().getMediaId());
                     notificationDTO.setAuthor(modelMapper.map(notification.getUser(), UserSummary.class));
                     return notificationDTO;
                 })

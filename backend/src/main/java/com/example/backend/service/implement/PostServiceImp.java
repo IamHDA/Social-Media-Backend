@@ -138,7 +138,7 @@ public class PostServiceImp implements PostService {
     }
 
     @Override
-    public String syncPrivateCode(User sender, User recipient){
+    public String syncPrivatePost(User sender, User recipient){
         List<PostRecipient> distribution = postRepo.findByUser(sender)
                 .stream()
                 .map(post -> new PostRecipient(post, recipient, sender))

@@ -13,7 +13,7 @@ public interface ConversationService {
     List<ConversationDTO> getConversationsByCurrentUser();
     List<ConversationDTO> getUnReadConversationsByCurrentUser();
     ConversationDTO getConversationById(String conversationId);
-    ConversationDTO createConversation(CreateConversationRequest request);
+    ConversationDTO createConversation(CreateConversationRequest request, MultipartFile image);
     String changeConversationAvatar(String conversationId, MultipartFile file) throws IOException;
     String deleteConversation(String conversationId);
     String updateLastMessageStatus(String conversationId, long userId);

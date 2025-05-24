@@ -44,6 +44,7 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     public String addParticipants(String conversationId, List<Long> participantIds) {
         Set<ConversationParticipant> participants = new HashSet<>();
         Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
+        if(conversation.getMaxSize() - participantIds.toArray().length < 0) return "Max size reached";
         for(Long participantId : participantIds) {
             participants.add(createParticipant(conversationId, participantId));
             conversation.getParticipantIds().add(participantId);
