@@ -1,7 +1,7 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.MessageDTO;
-import com.example.backend.dto.MessageMediaDTO;
+import com.example.backend.dto.chat.MessageDTO;
+import com.example.backend.dto.chat.MessageMediaDTO;
 import com.example.backend.service.MediaService;
 import com.example.backend.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;

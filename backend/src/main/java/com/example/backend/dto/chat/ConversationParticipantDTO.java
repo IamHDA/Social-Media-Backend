@@ -1,6 +1,5 @@
-package com.example.backend.dto;
+package com.example.backend.dto.chat;
 
-import com.example.backend.Enum.ParticipantRole;
 import lombok.Data;
 
 @Data

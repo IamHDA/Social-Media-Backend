@@ -1,17 +1,13 @@
 package com.example.backend.entity.mongoDB;
 
 import com.example.backend.Enum.ConversationType;
-import com.example.backend.dto.LastMessage;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.example.backend.dto.chat.LastMessage;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Document(collection = "conversation")
 @Data

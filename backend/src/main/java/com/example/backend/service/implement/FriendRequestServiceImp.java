@@ -2,6 +2,8 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.FriendRequestDTO;
+import com.example.backend.dto.RequestSenderDTO;
+import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.id.FriendRequestId;
 import com.example.backend.entity.mySQL.FriendRequest;
 import com.example.backend.entity.mySQL.Friendship;
@@ -13,8 +15,17 @@ import com.example.backend.service.FriendRequestService;
 import com.example.backend.service.NotificationService;
 import com.example.backend.service.UserService;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class FriendRequestServiceImp implements FriendRequestService {
@@ -26,6 +37,8 @@ public class FriendRequestServiceImp implements FriendRequestService {
     private NotificationService notificationService;
     @Autowired
     private FriendRequestRepository friendRequestRepo;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Override
     public FriendRequestDTO getFriendRequest(long opponentId){
@@ -38,6 +51,26 @@ public class FriendRequestServiceImp implements FriendRequestService {
                 .senderId(friendRequest.getUser1().getId())
                 .recipientId(friendRequest.getUser2().getId())
                 .build();
+    }
+
+    @Override
+    public List<RequestSenderDTO> getListFriendRequest(int pageNumber, int pageSize) {
+        User currentUser = userService.getCurrentUser();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        List<RequestSenderDTO> friendRequest = friendRequestRepo.findByUserId(currentUser.getId(), pageable)
+                .stream()
+                .sorted(Comparator.comparing(FriendRequest::getRequestTime).reversed())
+                .map(tmp -> {
+                    User user = tmp.getUser1();
+                    RequestSenderDTO dto = new RequestSenderDTO();
+                    dto.setUserId(tmp.getUser1().getId());
+                    dto.setAvatar(user.getAvatar());
+                    dto.setUsername(user.getUsername());
+                    dto.setSendAt(formatTimeAgo(tmp.getRequestTime()));
+                    return dto;
+                })
+                .toList();
+        return friendRequest;
     }
 
     @Override
@@ -62,5 +95,26 @@ public class FriendRequestServiceImp implements FriendRequestService {
     public String deleteFriendRequest(long senderId, long recipientId) {
         friendRequestRepo.deleteById(new FriendRequestId(senderId, recipientId));
         return "Friend request deleted";
+    }
+
+    public static String formatTimeAgo(LocalDateTime sentTime) {
+        LocalDateTime now = LocalDateTime.now();
+
+        long years = ChronoUnit.YEARS.between(sentTime, now);
+        if (years > 0) return years + " năm trước";
+
+        long months = ChronoUnit.MONTHS.between(sentTime, now);
+        if (months > 0) return months + " tháng trước";
+
+        long days = ChronoUnit.DAYS.between(sentTime, now);
+        if (days > 0) return days + " ngày trước";
+
+        long hours = ChronoUnit.HOURS.between(sentTime, now);
+        if (hours > 0) return hours + " giờ trước";
+
+        long minutes = ChronoUnit.MINUTES.between(sentTime, now);
+        if (minutes > 0) return minutes + " phút trước";
+
+        return "Vừa xong";
     }
 }

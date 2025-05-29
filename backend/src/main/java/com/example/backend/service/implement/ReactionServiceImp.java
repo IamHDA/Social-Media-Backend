@@ -2,7 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.Emotion;
 import com.example.backend.Enum.ReactionType;
-import com.example.backend.dto.ReactionRequest;
+import com.example.backend.dto.reaction.ReactionRequest;
 import com.example.backend.entity.mySQL.*;
 import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;

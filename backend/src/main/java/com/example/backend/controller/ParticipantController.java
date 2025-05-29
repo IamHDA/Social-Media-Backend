@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.ConversationParticipantDTO;
+import com.example.backend.dto.chat.ConversationParticipantDTO;
 import com.example.backend.service.ConversationParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

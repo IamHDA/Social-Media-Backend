@@ -1,6 +1,6 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.ReactionRequest;
+import com.example.backend.dto.reaction.ReactionRequest;
 import org.springframework.stereotype.Service;
 
 @Service

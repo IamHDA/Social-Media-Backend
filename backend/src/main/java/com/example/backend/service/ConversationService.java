@@ -1,9 +1,8 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.ConversationDTO;
-import com.example.backend.dto.CreateConversationRequest;
-import com.example.backend.dto.SearchConversationDTO;
-import com.example.backend.entity.mongoDB.Conversation;
+import com.example.backend.dto.chat.ConversationDTO;
+import com.example.backend.dto.chat.CreateConversationRequest;
+import com.example.backend.dto.chat.SearchConversationDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;

@@ -24,6 +24,11 @@ public class FriendController {
         return ResponseEntity.ok(friendService.getFriendListByUser(userId, pageNumber, keyword));
     }
 
+    @GetMapping("/getByCurrentUser")
+    public ResponseEntity<List<UserSummary>> findFriends(@RequestParam String keyword) {
+        return ResponseEntity.ok(friendService.getFriendListByCurrentUser(keyword));
+    }
+
     @PostMapping("/acceptRequest/{senderId}")
     public ResponseEntity<String> acceptFriendRequest(@PathVariable long senderId){
         return ResponseEntity.ok(friendService.acceptFriendRequest(senderId));

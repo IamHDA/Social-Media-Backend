@@ -34,9 +34,10 @@ public class User {
     private byte[] backgroundImage;
     @Enumerated(EnumType.STRING)
     private UserStatus status;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "create_time")
     private LocalDateTime createdAt;
+    @Column(name = "login_time")
+    private LocalDateTime loginAt;
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

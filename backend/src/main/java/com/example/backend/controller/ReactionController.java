@@ -1,10 +1,12 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.ReactionRequest;
+import com.example.backend.dto.reaction.ReactionRequest;
 import com.example.backend.service.ReactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/reaction")
@@ -18,8 +20,8 @@ public class ReactionController {
     }
 
     @PutMapping("/change/{reactionId}")
-    ResponseEntity<String> changeReaction(@PathVariable long reactionId, @RequestBody String emotion) {
-        return ResponseEntity.ok(reactionService.changeReaction(reactionId, emotion.substring(1, emotion.length() - 1)));
+    ResponseEntity<String> changeReaction(@PathVariable long reactionId, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(reactionService.changeReaction(reactionId, body.get("emotion")));
     }
 
     @DeleteMapping("/delete/{reactionId}")

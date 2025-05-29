@@ -1,13 +1,15 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ParticipantRole;
-import com.example.backend.dto.ConversationParticipantDTO;
-import com.example.backend.dto.LastMessage;
+import com.example.backend.dto.chat.ConversationParticipantDTO;
+import com.example.backend.dto.chat.LastMessage;
 import com.example.backend.entity.mongoDB.Conversation;
 import com.example.backend.entity.mongoDB.ConversationParticipant;
+import com.example.backend.entity.mongoDB.Message;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mongoDB.ConversationParticipantRepository;
 import com.example.backend.repository.mongoDB.ConversationRepository;
+import com.example.backend.repository.mongoDB.MessageRepository;
 import com.example.backend.repository.mySQL.FilterRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.ConversationParticipantService;
@@ -31,6 +33,8 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     private FilterRepository filterRepo;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private MessageRepository messageRepo;
 
     @Override
     public String changeRole(String conversationId, long participantId, String role){
@@ -67,6 +71,14 @@ public class ConversationParticipantServiceImp implements ConversationParticipan
     @Override
     public String changeNickname(String conversationId, long participantId, String newNickname) {
         Conversation conversation = conversationRepo.findById(conversationId).orElse(null);
+        List<Message> messages = messageRepo.findByConversationIdAndSender_id(conversationId, participantId)
+                .stream()
+                .map(message -> {
+                    message.getSender().setUsername(newNickname);
+                    return message;
+                })
+                .toList();
+        messageRepo.saveAll(messages);
         LastMessage lastMessage = conversation.getLastMessage();
         if(lastMessage.getSenderId() == participantId){
             lastMessage.setSenderName(newNickname);

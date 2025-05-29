@@ -1,6 +1,6 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.ConversationParticipantDTO;
+import com.example.backend.dto.chat.ConversationParticipantDTO;
 
 import java.util.List;
 

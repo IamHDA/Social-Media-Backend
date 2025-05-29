@@ -1,8 +1,7 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.PostCreate;
-import com.example.backend.dto.PostDTO;
-import com.example.backend.dto.SharedPost;
+import com.example.backend.dto.post.PostCreate;
+import com.example.backend.dto.post.PostDTO;
 import com.example.backend.service.PostService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,15 +25,13 @@ public class PostController {
     private PostService postService;
     private record SharePostRequest(String content, String privacy){}
 
-    @GetMapping("/newestPost")
+    @GetMapping("/newest")
     public ResponseEntity<List<PostDTO>> getNewestPosts(){
-        System.out.println("Loi o 2");
         return ResponseEntity.ok(postService.getNewestPost());
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<PostDTO>> getPostsByUserId(@PathVariable long userId){
-        System.out.println("Loi o 1");
         return ResponseEntity.ok(postService.getPostsByUser(userId));
     }
 
@@ -44,9 +41,8 @@ public class PostController {
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> createPersonalPost(
+    public ResponseEntity<PostDTO> createPersonalPost(
             @Parameter(
-                    description = "Danh sách file ảnh",
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                             array = @ArraySchema(
                                     schema = @Schema(type = "string", format = "binary")

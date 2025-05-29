@@ -1,20 +1,12 @@
 package com.example.backend.controller;
 
-import com.example.backend.Enum.FileType;
-import com.example.backend.dto.ConversationDTO;
-import com.example.backend.dto.CreateConversationRequest;
-import com.example.backend.dto.MessageMediaDTO;
-import com.example.backend.dto.SearchConversationDTO;
-import com.example.backend.service.ConversationParticipantService;
+import com.example.backend.dto.chat.ConversationDTO;
+import com.example.backend.dto.chat.CreateConversationRequest;
+import com.example.backend.dto.chat.MessageMediaDTO;
+import com.example.backend.dto.chat.SearchConversationDTO;
 import com.example.backend.service.ConversationService;
 import com.example.backend.service.MediaService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

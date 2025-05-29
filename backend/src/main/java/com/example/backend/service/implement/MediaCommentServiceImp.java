@@ -2,11 +2,10 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.CommentDTO;
-import com.example.backend.dto.ReactionDTO;
-import com.example.backend.dto.ReactionSummary;
+import com.example.backend.dto.reaction.ReactionDTO;
+import com.example.backend.dto.reaction.ReactionSummary;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.mySQL.Notification;
-import com.example.backend.entity.mySQL.PostComment;
 import com.example.backend.entity.mySQL.PostMediaComment;
 import com.example.backend.entity.mySQL.User;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;

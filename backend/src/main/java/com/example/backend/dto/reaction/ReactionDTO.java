@@ -1,4 +1,4 @@
-package com.example.backend.dto;
+package com.example.backend.dto.reaction;
 
 import com.example.backend.Enum.Emotion;
 import lombok.Data;

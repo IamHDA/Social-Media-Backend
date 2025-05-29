@@ -2,7 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ConversationType;
 import com.example.backend.Enum.ParticipantRole;
-import com.example.backend.dto.*;
+import com.example.backend.dto.chat.*;
 import com.example.backend.entity.mongoDB.Conversation;
 import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mySQL.User;
@@ -12,7 +12,6 @@ import com.example.backend.repository.mySQL.FilterRepository;
 import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.ConversationService;
 import com.example.backend.service.UserService;
-import jakarta.websocket.Encoder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -101,13 +100,11 @@ public class ConversationServiceImp implements ConversationService {
         }else conversation.setMaxSize(50);
         request.getParticipantIds().add(request.getCreatorId());
         conversation.setParticipantIds(request.getParticipantIds());
-        System.out.println(conversation.getParticipantIds());
         String conversationId = conversationRepo.save(conversation).getId();
         Set<ConversationParticipant> participants = new HashSet<>();
         ConversationDTO conversationDTO = modelMapper.map(conversation, ConversationDTO.class);
         List<ConversationParticipantDTO> participantsDTO = new ArrayList<>();
         for(Long participantId : conversation.getParticipantIds()) {
-            System.out.println("Tao nhom" + participantId);
             User user = userRepo.findById(participantId).orElse(null);
             ConversationParticipant participant = new ConversationParticipant();
             participant.setConversationId(conversationId);
@@ -125,10 +122,6 @@ public class ConversationServiceImp implements ConversationService {
             participantsDTO.add(modelMapper.map(participant, ConversationParticipantDTO.class));
             participants.add(participant);
         }
-        System.out.println("Đây là participants" + participants
-                .stream()
-                .map(ConversationParticipant::getParticipantId)
-                .toList());
         conversationDTO.setParticipants(participantsDTO);
         conversationParticipantRepo.saveAll(participants);
         return conversationDTO;
@@ -218,7 +211,7 @@ public class ConversationServiceImp implements ConversationService {
     }
 
     private ConversationDTO convertConversationToConversationDTO(Conversation conversation, User user){
-        System.out.println(conversation.getName());
+        System.out.println("conversationName" + conversation.getName());
         return ConversationDTO.builder()
                 .id(conversation.getId())
                 .name(conversation.getName())
@@ -251,7 +244,7 @@ public class ConversationServiceImp implements ConversationService {
     private byte[] getConversationAvatar(Conversation conversation) {
         if(conversation.getType().equals(ConversationType.PRIVATE)) {
             Long recipientId = conversation.getParticipantIds().get(0);
-            System.out.println(recipientId);
+            System.out.println("recipientId" + recipientId);
             return userRepo.findById(recipientId).get().getAvatar();
         }
         return conversation.getAvatar();

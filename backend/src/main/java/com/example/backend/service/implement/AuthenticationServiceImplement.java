@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -45,6 +46,7 @@ public class AuthenticationServiceImplement implements AuthenticationService {
 
     @Override
     public AuthenticationResponse login(LogIn request) {
+        System.out.println(request.getEmail());
         User user = userRepo.findByEmail(request.getEmail()).orElse(null);
         if(user == null){
             return new AuthenticationResponse(null, null, "User not found!");
@@ -54,6 +56,8 @@ public class AuthenticationServiceImplement implements AuthenticationService {
         }catch(BadCredentialsException e){
             return new AuthenticationResponse( null , null,"Wrong password!");
         }
+        user.setLoginAt(LocalDateTime.now());
+        userRepo.save(user);
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);

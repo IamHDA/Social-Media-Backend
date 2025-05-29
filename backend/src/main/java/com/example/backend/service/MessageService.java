@@ -1,7 +1,7 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.MessageDTO;
-import com.example.backend.dto.NewMessage;
+import com.example.backend.dto.chat.MessageDTO;
+import com.example.backend.dto.chat.NewMessage;
 
 import java.util.List;
 

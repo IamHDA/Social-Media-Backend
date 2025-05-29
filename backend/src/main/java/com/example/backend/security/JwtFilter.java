@@ -1,7 +1,7 @@
 package com.example.backend.security;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,10 +45,16 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        }catch(ExpiredJwtException e){
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("AccessToken expired!");
+        }catch(Exception e){
+            if(e instanceof ExpiredJwtException){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("AccessToken expired!");
+            }else if(e instanceof SignatureException){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("AccessToken unauthorized!");
+            }
             return;
         }
         filterChain.doFilter(request, response);

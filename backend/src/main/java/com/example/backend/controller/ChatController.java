@@ -1,22 +1,16 @@
 package com.example.backend.controller;
 
 import com.example.backend.Enum.MessageType;
-import com.example.backend.dto.MessageDTO;
-import com.example.backend.dto.MessageMediaDTO;
-import com.example.backend.dto.NewMessage;
-import com.example.backend.dto.NoticeMessageDTO;
-import com.example.backend.service.MediaService;
+import com.example.backend.dto.chat.MessageDTO;
+import com.example.backend.dto.chat.NewMessage;
+import com.example.backend.dto.chat.NoticeMessageDTO;
 import com.example.backend.service.MessageService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 public class ChatController {

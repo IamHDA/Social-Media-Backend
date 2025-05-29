@@ -1,9 +1,11 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.FileType;
-import com.example.backend.dto.MessageMediaDTO;
+import com.example.backend.dto.chat.MessageMediaDTO;
+import com.example.backend.dto.post.PostMediaDTO;
 import com.example.backend.entity.mongoDB.MessageFile;
 import com.example.backend.entity.mongoDB.PostMedia;
+import com.example.backend.entity.mySQL.Post;
 import com.example.backend.repository.mongoDB.MessageMediaRepository;
 import com.example.backend.repository.mongoDB.PostMediaRepository;
 import com.example.backend.service.MediaService;
@@ -18,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -32,7 +33,7 @@ public class MediaServiceImp implements MediaService {
     private ModelMapper modelMapper;
 
     @Override
-    public String uploadPostMedia(List<MultipartFile> files, long postId){
+    public String uploadPostMedia(List<MultipartFile> files, long postId, long userId){
         try{
             for(MultipartFile file : files){
                 String url = "http://100.114.40.116:8081/PostMedia/";
@@ -44,6 +45,8 @@ public class MediaServiceImp implements MediaService {
                 postMedia.setUrl(mediaUrl);
                 postMedia.setFileType(type);
                 postMedia.setPostId(postId);
+                postMedia.setUploadAt(Instant.now());
+                postMedia.setUserId(userId);
                 String filePath = "C:/Social-Media/Social-Media-Backend/media/post_media/" + postId + "_" + fileName;
                 file.transferTo(new File(filePath));
                 postMedia.setPath(filePath);

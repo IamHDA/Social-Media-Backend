@@ -17,5 +17,9 @@ public interface MessageRepository extends MongoRepository<Message, String> {
             "{ $limit: 1 }"
     })
     Message findTopByConversationIdAndSenderIdOrderBySendAtDesc(String conversationId, long senderId);
+
+    List<Message> findByConversationIdAndSender_id(String conversationId, long participantId);
+
+    List<Message> findBySender_Id(Long id);
 }
 

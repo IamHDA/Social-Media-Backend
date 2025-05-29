@@ -1,8 +1,6 @@
-package com.example.backend.dto;
+package com.example.backend.dto.chat;
 
-import com.example.backend.Enum.ConversationType;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 

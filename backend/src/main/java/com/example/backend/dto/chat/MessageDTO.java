@@ -1,13 +1,11 @@
-package com.example.backend.dto;
+package com.example.backend.dto.chat;
 
 import com.example.backend.Enum.MessageType;
+import com.example.backend.dto.UserSummary;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data

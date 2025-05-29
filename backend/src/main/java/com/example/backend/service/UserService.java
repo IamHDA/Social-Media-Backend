@@ -17,4 +17,6 @@ public interface UserService {
     String updateAvatar(MultipartFile file) throws IOException;
     String updateBackgroundImage(MultipartFile file) throws IOException;
     String changeInformation(ChangeInformationRequest request);
+
+    String changeBio(String bio);
 }

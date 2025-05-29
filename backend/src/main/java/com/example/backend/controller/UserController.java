@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -62,9 +63,9 @@ public class UserController {
         return ResponseEntity.ok(userService.updateBackgroundImage(file));
     }
 
-    @PutMapping("/changeInformation")
-    public ResponseEntity<String> changeInformation(@RequestBody ChangeInformationRequest request){
-        return ResponseEntity.ok(userService.changeInformation(request));
+    @PutMapping("/profile/update/bio")
+    public ResponseEntity<String> changeBio(@RequestBody Map<String, String> body){
+        return ResponseEntity.ok(userService.changeBio(body.get("bio")));
     }
 
     @MessageMapping("/user.disconnect")

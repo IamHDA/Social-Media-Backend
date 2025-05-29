@@ -2,6 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.Enum.PostPrivacy;
+import com.example.backend.Enum.UserStatus;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.id.FriendRequestId;
 import com.example.backend.entity.mySQL.*;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -84,6 +86,18 @@ public class FriendServiceImp implements FriendService {
         return friendshipRepo.findFriendsByUser(userId, pageable, keyword)
                 .stream()
                 .map(user ->  modelMapper.map(user, UserSummary.class))
+                .toList();
+    }
+
+    @Override
+    public List<UserSummary> getFriendListByCurrentUser(String keyword) {
+        User currentUser = userService.getCurrentUser();
+        Pageable pageable = PageRequest.of(0, 10);
+        return friendshipRepo.findFriendsByUser(currentUser.getId(), pageable, keyword)
+                .stream()
+                .sorted(Comparator.comparing((User user) -> user.getStatus().equals(UserStatus.ONLINE) ? 0 : 1)
+                        .thenComparing(User::getLoginAt).reversed())
+                .map(user -> modelMapper.map(user, UserSummary.class))
                 .toList();
     }
 }

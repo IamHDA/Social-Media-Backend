@@ -1,9 +1,9 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.MessageType;
-import com.example.backend.dto.LastMessage;
-import com.example.backend.dto.MessageDTO;
-import com.example.backend.dto.NewMessage;
+import com.example.backend.dto.chat.LastMessage;
+import com.example.backend.dto.chat.MessageDTO;
+import com.example.backend.dto.chat.NewMessage;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.entity.mongoDB.Conversation;
 import com.example.backend.entity.mongoDB.ConversationParticipant;
