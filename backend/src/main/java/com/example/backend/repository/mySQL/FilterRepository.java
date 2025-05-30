@@ -121,7 +121,7 @@ public class FilterRepository {
         return results.stream().map(PostRecipient::getPost).toList();
     }
 
-    public List<Notification> findNotificationByUserSortByNoticeTime(User user){
+    public List<Notification> findNotificationByUserSortByNoticeTime(User user, int pageNumber, int pageSize){
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Notification> query = cb.createQuery(Notification.class);
         Root<Notification> notificationRoot = query.from(Notification.class);
@@ -135,7 +135,10 @@ public class FilterRepository {
         query.select(notificationRoot)
                 .where(predicate)
                 .orderBy(cb.asc(priority), cb.desc(notificationRoot.get("noticeAt")));
-        return em.createQuery(query).getResultList();
+        return em.createQuery(query)
+                .setFirstResult((pageNumber - 1) * pageSize)
+                .setMaxResults(pageSize)
+                .getResultList();
     }
 
     public List<ConversationParticipant> findConversationParticipantSortByRole(String conversationId){

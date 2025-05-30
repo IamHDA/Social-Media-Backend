@@ -12,8 +12,10 @@ import com.example.backend.repository.mySQL.NotificationRepository;
 import com.example.backend.repository.mySQL.NotificationUserRepository;
 import com.example.backend.service.NotificationService;
 import com.example.backend.service.UserService;
+import com.example.backend.util.Format;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,8 @@ public class NotificationServiceImp implements NotificationService {
     private FilterRepository filterRepo;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private Format format;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     public NotificationServiceImp(SimpMessagingTemplate simpMessagingTemplate) {
@@ -42,14 +46,15 @@ public class NotificationServiceImp implements NotificationService {
     }
 
     @Override
-    public List<NotificationDTO> getNotificationsByUser() {
-        return filterRepo.findNotificationByUserSortByNoticeTime(userService.getCurrentUser())
+    public List<NotificationDTO> getNotificationsByUser(int pageNumber, int pageSize) {
+        return filterRepo.findNotificationByUserSortByNoticeTime(userService.getCurrentUser(), pageNumber, pageSize)
                 .stream()
                 .map(notification -> {
                     NotificationDTO notificationDTO = modelMapper.map(notification, NotificationDTO.class);
                     if(notification.getType().equals(NotificationType.COMMENT)) notificationDTO.setPostId(notification.getPost().getId());
                     else if(notification.getType().equals(NotificationType.MEDIA_COMMENT)) notificationDTO.setMediaId(notification.getPostMediaComment().getMediaId());
                     notificationDTO.setAuthor(modelMapper.map(notification.getUser(), UserSummary.class));
+                    notificationDTO.setNoticeAt(format.formatTimeAgo(notification.getNoticeAt()));
                     return notificationDTO;
                 })
                 .toList();

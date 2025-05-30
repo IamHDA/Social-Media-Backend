@@ -7,7 +7,7 @@ import com.example.backend.entity.mySQL.User;
 import java.util.List;
 
 public interface NotificationService {
-    List<NotificationDTO> getNotificationsByUser();
+    List<NotificationDTO> getNotificationsByUser(int pageNumber, int pageSize);
     void sendNotificationToFriends(Notification notification, User user, String content);
     void sendPersonalNotification(Notification notification, User sender, User recipient, String content);
     String changeStatus(long noticeId);

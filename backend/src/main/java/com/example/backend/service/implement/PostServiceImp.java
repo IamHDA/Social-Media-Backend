@@ -110,7 +110,7 @@ public class PostServiceImp implements PostService {
             Notification notification = new Notification();
             notification.setPost(tmp);
             notification.setType(NotificationType.POST);
-            notificationService.sendNotificationToFriends(notification, currentUser, currentUser.getUsername() + " Đã tạo 1 bài viết mới: " + data.getContent());
+            notificationService.sendNotificationToFriends(notification, currentUser, "Đã tạo 1 bài viết mới: " + data.getContent());
             return convertPostToDTO(tmp);
         }catch (Exception e){
             System.out.println(e.getMessage());

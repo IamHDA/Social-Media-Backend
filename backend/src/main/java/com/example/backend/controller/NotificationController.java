@@ -14,9 +14,9 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
     
-    @GetMapping("/get")
-    public ResponseEntity<List<NotificationDTO>> getNotifications() {
-        return ResponseEntity.ok(notificationService.getNotificationsByUser());
+    @GetMapping("/getList")
+    public ResponseEntity<List<NotificationDTO>> getNotifications(@RequestParam int pageNumber, @RequestParam int pageSize) {
+        return ResponseEntity.ok(notificationService.getNotificationsByUser(pageNumber, pageSize));
     }
     
     @PutMapping("/changeStatus/{noticeId}")

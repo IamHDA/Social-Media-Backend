@@ -13,6 +13,7 @@ import com.example.backend.service.NotificationService;
 import com.example.backend.service.PostCommentService;
 import com.example.backend.service.MediaService;
 import com.example.backend.service.UserService;
+import com.example.backend.util.Format;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class PostCommentServiceImp implements PostCommentService {
     private ReactionRepository reactionRepo;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private Format format;
 
     @Override
     public List<CommentDTO> getResponse(long commentId) {
@@ -70,6 +73,7 @@ public class PostCommentServiceImp implements PostCommentService {
                             .emotions(reactionRepo.getEmotionsByPostComment(comment))
                             .total(reactionRepo.countReactionsByPostComment(comment))
                             .build());
+                    commentDTO.setCommentedAt(format.formatTimeAgo(comment.getCommentedAt()));
                     Reaction reaction = reactionRepo.findByUserAndPostComment(currentUser, comment);
                     if(reaction == null) commentDTO.setReactionDTO(null);
                     else commentDTO.setReactionDTO(modelMapper.map(reaction, ReactionDTO.class));

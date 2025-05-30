@@ -14,6 +14,7 @@ import com.example.backend.repository.mySQL.UserRepository;
 import com.example.backend.service.FriendRequestService;
 import com.example.backend.service.NotificationService;
 import com.example.backend.service.UserService;
+import com.example.backend.util.Format;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class FriendRequestServiceImp implements FriendRequestService {
     @Autowired
     private FriendRequestRepository friendRequestRepo;
     @Autowired
-    private ModelMapper modelMapper;
+    private Format format;
 
     @Override
     public FriendRequestDTO getFriendRequest(long opponentId){
@@ -66,7 +67,7 @@ public class FriendRequestServiceImp implements FriendRequestService {
                     dto.setUserId(tmp.getUser1().getId());
                     dto.setAvatar(user.getAvatar());
                     dto.setUsername(user.getUsername());
-                    dto.setSendAt(formatTimeAgo(tmp.getRequestTime()));
+                    dto.setSendAt(format.formatTimeAgo(tmp.getRequestTime()));
                     return dto;
                 })
                 .toList();
@@ -78,6 +79,7 @@ public class FriendRequestServiceImp implements FriendRequestService {
         User recipient = userRepo.findById(recipientId);
         User sender = userService.getCurrentUser();
         FriendRequest friendRequest = new FriendRequest(sender, recipient);
+        friendRequestRepo.save(friendRequest);
         Notification notification = new Notification();
         notification.setType(NotificationType.FRIEND_REQUEST);
         notificationService.sendPersonalNotification(
@@ -86,7 +88,6 @@ public class FriendRequestServiceImp implements FriendRequestService {
                 recipient,
                 "đã gửi lời mời kết bạn"
         );
-        friendRequestRepo.save(friendRequest);
         return "Request sent";
     }
 
@@ -95,26 +96,5 @@ public class FriendRequestServiceImp implements FriendRequestService {
     public String deleteFriendRequest(long senderId, long recipientId) {
         friendRequestRepo.deleteById(new FriendRequestId(senderId, recipientId));
         return "Friend request deleted";
-    }
-
-    public static String formatTimeAgo(LocalDateTime sentTime) {
-        LocalDateTime now = LocalDateTime.now();
-
-        long years = ChronoUnit.YEARS.between(sentTime, now);
-        if (years > 0) return years + " năm trước";
-
-        long months = ChronoUnit.MONTHS.between(sentTime, now);
-        if (months > 0) return months + " tháng trước";
-
-        long days = ChronoUnit.DAYS.between(sentTime, now);
-        if (days > 0) return days + " ngày trước";
-
-        long hours = ChronoUnit.HOURS.between(sentTime, now);
-        if (hours > 0) return hours + " giờ trước";
-
-        long minutes = ChronoUnit.MINUTES.between(sentTime, now);
-        if (minutes > 0) return minutes + " phút trước";
-
-        return "Vừa xong";
     }
 }

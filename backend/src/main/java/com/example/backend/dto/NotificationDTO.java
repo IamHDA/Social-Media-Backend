@@ -14,5 +14,5 @@ public class NotificationDTO {
     private String content;
     private boolean read;
     private UserSummary author;
-    private LocalDateTime noticeAt;
+    private String noticeAt;
 }
