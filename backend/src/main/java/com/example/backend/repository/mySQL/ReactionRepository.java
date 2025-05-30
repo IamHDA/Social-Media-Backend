@@ -14,11 +14,11 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     @Query("""
     select r.emotion
     from Reaction r 
-    where r.post = :post
+    where r.post.id = :postId
     group by r.emotion
     order by count(r.emotion) desc
 """)
-    List<Emotion> getEmotionsByPost(@Param("post") Post post);
+    List<Emotion> getEmotionsByPostId(@Param("postId") long postId);
 
     @Query("""
     select r.emotion
@@ -32,9 +32,9 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     @Query("""
     select count(r)
     from Reaction r
-    where r.post = :post
+    where r.post.id = :postId
 """)
-    int countReactionsByPost(@Param("post") Post post);
+    int countReactionsByPostId(@Param("postId") long postId);
 
     @Query("""
     select count(r)

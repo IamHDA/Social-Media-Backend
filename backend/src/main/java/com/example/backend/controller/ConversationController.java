@@ -29,6 +29,11 @@ public class ConversationController {
         return ResponseEntity.ok(conversationService.getConversationsByCurrentUser());
     }
 
+    @GetMapping("/getPrivateConversationId/{recipientId}")
+    public ResponseEntity<String> getPrivateConversationId(@PathVariable long recipientId){
+        return ResponseEntity.ok(conversationService.getConversationIdByRecipientId(recipientId));
+    }
+
     @GetMapping("/{conversationId}")
     public ResponseEntity<ConversationDTO> getConversation(@PathVariable String conversationId){
         return ResponseEntity.ok(conversationService.getConversationById(conversationId));
@@ -42,16 +47,6 @@ public class ConversationController {
     @GetMapping("/getNotRead")
     public ResponseEntity<List<ConversationDTO>> getNotReadConversations(){
         return ResponseEntity.ok(conversationService.getUnReadConversationsByCurrentUser());
-    }
-
-    @GetMapping("/getAvatar/{conversationId}")
-    public ResponseEntity<String> getConversationAvatarById(@PathVariable String conversationId){
-        return ResponseEntity.ok(conversationService.getConversationAvatarById(conversationId));
-    }
-
-    @GetMapping("/getName/{conversationId}")
-    public ResponseEntity<String> getConversationNameById(@PathVariable String conversationId){
-        return ResponseEntity.ok(conversationService.getConversationName(conversationId));
     }
 
     @GetMapping("/getFiles/{conversationId}")

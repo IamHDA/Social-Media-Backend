@@ -20,13 +20,8 @@ public class FriendController {
     }
 
     @GetMapping("/getList/{userId}")
-    public ResponseEntity<List<UserSummary>> findFriends(@PathVariable long userId, @RequestParam int pageNumber, @RequestParam String keyword) {
-        return ResponseEntity.ok(friendService.getFriendListByUser(userId, pageNumber, keyword));
-    }
-
-    @GetMapping("/getByCurrentUser")
-    public ResponseEntity<List<UserSummary>> findFriends(@RequestParam String keyword) {
-        return ResponseEntity.ok(friendService.getFriendListByCurrentUser(keyword));
+    public ResponseEntity<List<UserSummary>> findFriends(@PathVariable long userId, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String keyword) {
+        return ResponseEntity.ok(friendService.getFriendListByUser(userId, pageNumber, pageSize, keyword));
     }
 
     @PostMapping("/acceptRequest/{senderId}")
@@ -35,7 +30,7 @@ public class FriendController {
     }
 
     @DeleteMapping("/delete/{friendId}")
-    public ResponseEntity<String> deleteFriendRequest(@PathVariable long friendId){
+    public ResponseEntity<String> deleteFriend(@PathVariable long friendId){
         return ResponseEntity.ok(friendService.deleteFriend(friendId));
     }
 }

@@ -4,6 +4,7 @@ import com.example.backend.entity.id.PostRecipientId;
 import com.example.backend.entity.mySQL.PostRecipient;
 import com.example.backend.entity.mySQL.User;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,5 +29,10 @@ public interface PostRecipientRepository extends JpaRepository<PostRecipient, Po
         )
 """)
     void deletePrivatePostByUser1AndUser2(@Param("user1") User user1, @Param("user2") User user2);
-    List<PostRecipient> findByRecipientAndSender(User opponent, User currentUser);
+    @Query("""
+    select pr from PostRecipient pr
+    where (pr.recipient.id = :recipientId and pr.sender.id = :senderId)
+       or (pr.recipient.id = :senderId and pr.sender.id = :recipientId)
+""")
+    List<PostRecipient> findByRecipientIdAndSenderId(long recipientId, long senderId, Pageable pageable);
 }

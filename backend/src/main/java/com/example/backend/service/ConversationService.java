@@ -17,7 +17,6 @@ public interface ConversationService {
     String deleteConversation(String conversationId);
     String updateLastMessageStatus(String conversationId, long userId);
     String updateChatRoomName(String conversationId, String newName);
-    String getConversationAvatarById(String conversationId);
-    String getConversationName(String conversationId);
+    String getConversationIdByRecipientId(long recipientId);
     List<SearchConversationDTO> searchConversations(String keyword);
 }

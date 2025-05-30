@@ -81,23 +81,11 @@ public class FriendServiceImp implements FriendService {
     }
 
     @Override
-    public List<UserSummary> getFriendListByUser(long userId, int pageNumber, String keyword) {
-        Pageable pageable = PageRequest.of(pageNumber, 10);
+    public List<UserSummary> getFriendListByUser(long userId, int pageNumber, int pageSize, String keyword) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return friendshipRepo.findFriendsByUser(userId, pageable, keyword)
                 .stream()
                 .map(user ->  modelMapper.map(user, UserSummary.class))
-                .toList();
-    }
-
-    @Override
-    public List<UserSummary> getFriendListByCurrentUser(String keyword) {
-        User currentUser = userService.getCurrentUser();
-        Pageable pageable = PageRequest.of(0, 10);
-        return friendshipRepo.findFriendsByUser(currentUser.getId(), pageable, keyword)
-                .stream()
-                .sorted(Comparator.comparing((User user) -> user.getStatus().equals(UserStatus.ONLINE) ? 0 : 1)
-                        .thenComparing(User::getLoginAt).reversed())
-                .map(user -> modelMapper.map(user, UserSummary.class))
                 .toList();
     }
 }

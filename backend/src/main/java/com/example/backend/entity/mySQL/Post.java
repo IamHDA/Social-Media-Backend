@@ -15,7 +15,7 @@ import java.util.List;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
     @Column(columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String content;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -28,6 +28,8 @@ public class Post {
     private LocalDateTime updatedAt;
     @Column(name = "background_url")
     private String backgroundUrl;
+    @Column(name = "wall_id")
+    private long wallId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

@@ -26,13 +26,13 @@ public class PostController {
     private record SharePostRequest(String content, String privacy){}
 
     @GetMapping("/newest")
-    public ResponseEntity<List<PostDTO>> getNewestPosts(){
-        return ResponseEntity.ok(postService.getNewestPost());
+    public ResponseEntity<List<PostDTO>> getNewestPosts(@RequestParam int pageNumber){
+        return ResponseEntity.ok(postService.getNewestPost(pageNumber));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PostDTO>> getPostsByUserId(@PathVariable long userId){
-        return ResponseEntity.ok(postService.getPostsByUser(userId));
+    public ResponseEntity<List<PostDTO>> getPostsByUserId(@PathVariable long userId, @RequestParam int pageNumber){
+        return ResponseEntity.ok(postService.getPostsByUserId(userId, pageNumber));
     }
 
     @PostMapping("/syncPublicPost")

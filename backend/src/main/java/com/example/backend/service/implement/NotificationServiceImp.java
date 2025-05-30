@@ -15,6 +15,7 @@ import com.example.backend.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,11 @@ public class NotificationServiceImp implements NotificationService {
     private FilterRepository filterRepo;
     @Autowired
     private ModelMapper modelMapper;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+
+    public NotificationServiceImp(SimpMessagingTemplate simpMessagingTemplate) {
+        this.simpMessagingTemplate = simpMessagingTemplate;
+    }
 
     @Override
     public List<NotificationDTO> getNotificationsByUser() {
@@ -58,6 +64,7 @@ public class NotificationServiceImp implements NotificationService {
         notificationRepo.save(notification);
         for(User friend : friends) {
             notificationUserRepo.save(new NotificationUser(friend, notification));
+            simpMessagingTemplate.convertAndSendToUser(String.valueOf(friend.getId()), "/queue/notification", modelMapper.map(notification, NotificationDTO.class));
         }
     }
 
@@ -68,6 +75,7 @@ public class NotificationServiceImp implements NotificationService {
         notification.setContent(content);
         notificationRepo.save(notification);
         notificationUserRepo.save(new NotificationUser(recipient, notification));
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(recipient.getId()), "/queue/notification", modelMapper.map(notification, NotificationDTO.class));
     }
 
     @Override

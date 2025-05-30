@@ -6,4 +6,5 @@ import lombok.Data;
 public class PostCreate {
     private String content;
     private String privacy;
+    private long wallId;
 }

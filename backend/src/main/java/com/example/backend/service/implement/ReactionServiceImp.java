@@ -3,6 +3,7 @@ package com.example.backend.service.implement;
 import com.example.backend.Enum.Emotion;
 import com.example.backend.Enum.ReactionType;
 import com.example.backend.dto.reaction.ReactionRequest;
+import com.example.backend.dto.reaction.ReactionSummary;
 import com.example.backend.entity.mySQL.*;
 import com.example.backend.repository.mySQL.PostCommentRepository;
 import com.example.backend.repository.mySQL.PostMediaCommentRepository;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ReactionServiceImp implements ReactionService {
@@ -73,6 +75,11 @@ public class ReactionServiceImp implements ReactionService {
         Reaction reaction = reactionRepo.findById(reactionId).orElse(null);
         reactionRepo.delete(reaction);
         return "Reaction deleted";
+    }
+
+    @Override
+    public List<Emotion> getEmotions(long postId) {
+        return reactionRepo.getEmotionsByPostId(postId);
     }
 
     @Override

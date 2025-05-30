@@ -3,7 +3,9 @@ package com.example.backend.repository.mySQL;
 import com.example.backend.entity.mongoDB.ConversationParticipant;
 import com.example.backend.entity.mySQL.*;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -16,6 +18,8 @@ import java.util.List;
 
 @Repository
 public class FilterRepository {
+    @Autowired
+    private PostRecipientRepository postRecipientRepo;
     private final EntityManager em;
     private final MongoTemplate mongoTemplate;
 
@@ -45,11 +49,14 @@ public class FilterRepository {
         Expression<Object> priority = cb.selectCase()
                 .when(cb.exists(friendSubquery), cb.literal(0))
                 .otherwise(cb.literal(1));
-        Predicate predicate;
-        if(keyword.isBlank()) predicate = cb.conjunction();
+        Predicate predicate = cb.notEqual(userRoot.get("id"), cb.literal(currentUserId));
+        if(keyword.isBlank()) predicate = cb.and(
+                predicate,
+                cb.conjunction()
+        );
         else{
             predicate = cb.and(
-                    cb.notEqual(userRoot.get("id"), currentUserId),
+                    predicate,
                     cb.or(
                             cb.like(cb.lower(userRoot.get("username")), "%" + keyword.toLowerCase() + "%"),
                             cb.like(cb.lower(userRoot.get("email")), "%" + keyword.toLowerCase() + "%")
@@ -63,37 +70,55 @@ public class FilterRepository {
         return em.createQuery(query).getResultList();
     }
 
-    public List<Post> getPosts(long currentUserId){
+    public List<Post> getPosts(long currentUserId, int pageNumber) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Post> query = cb.createQuery(Post.class);
-        Root<Post> postRoot = query.from(Post.class);
-        Join<Post, PostRecipient> postRecipients = postRoot.join("postRecipients");
-        Root<User> userRoot = query.from(User.class);
+        CriteriaQuery<PostRecipient> query = cb.createQuery(PostRecipient.class);
+        Root<PostRecipient> root = query.from(PostRecipient.class);
+        Join<PostRecipient, Post> postJoin = root.join("post");
+        Join<PostRecipient, User> recipientJoin = root.join("recipient");
+
         Subquery<Long> friendSubquery = query.subquery(Long.class);
         Root<Friendship> friendshipRoot = friendSubquery.from(Friendship.class);
         friendSubquery.select(cb.literal(1L))
                 .where(cb.or(
                         cb.and(
                                 cb.equal(friendshipRoot.get("user1").get("id"), currentUserId),
-                                cb.equal(friendshipRoot.get("user2"), userRoot)
+                                cb.equal(friendshipRoot.get("user2"), recipientJoin)
                         ),
                         cb.and(
-                                cb.equal(friendshipRoot.get("user1"), userRoot),
+                                cb.equal(friendshipRoot.get("user1"), recipientJoin),
                                 cb.equal(friendshipRoot.get("user2").get("id"), currentUserId)
                         )
                 ));
+
         Predicate predicate = cb.and(
-                cb.equal(postRecipients.get("recipient").get("id"), currentUserId),
-                cb.equal(postRecipients.get("disabled"), false)
+                cb.equal(root.get("recipient").get("id"), currentUserId),
+                cb.equal(root.get("disabled"), false)
         );
+
         Expression<Object> priority = cb.selectCase()
-                .when(cb.equal(postRecipients.get("isReviewed"), false), cb.literal(0))
+                .when(cb.equal(root.get("isReviewed"), false), cb.literal(0))
                 .when(cb.exists(friendSubquery), cb.literal(1))
                 .otherwise(cb.literal(2));
-        query.select(postRoot)
+
+        query.select(root)
                 .where(predicate)
-                .orderBy(cb.asc(priority), cb.desc(postRoot.get("createdAt")));
-        return em.createQuery(query).getResultList();
+                .orderBy(cb.asc(priority), cb.desc(postJoin.get("createdAt")));
+
+        int safePageNumber = Math.max(1, pageNumber);
+        List<PostRecipient> results = em.createQuery(query)
+                .setFirstResult((safePageNumber - 1) * 5)
+                .setMaxResults(5)
+                .getResultList()
+                .stream()
+                .map(postRecipient -> {
+                    postRecipient.setReviewed(true);
+                    return postRecipient;
+                })
+                .toList();
+        postRecipientRepo.saveAll(results);
+
+        return results.stream().map(PostRecipient::getPost).toList();
     }
 
     public List<Notification> findNotificationByUserSortByNoticeTime(User user){

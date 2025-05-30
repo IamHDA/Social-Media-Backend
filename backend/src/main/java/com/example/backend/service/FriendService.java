@@ -10,8 +10,6 @@ public interface FriendService {
     String acceptFriendRequest(long friendId);
     String deleteFriend(long friendId);
 
-    List<UserSummary> getFriendListByUser(long userId, int pageNumber, String keyword);
-
-    List<UserSummary> getFriendListByCurrentUser(String keyword);
+    List<UserSummary> getFriendListByUser(long userId, int pageNumber, int pageSize, String keyword);
 }
 

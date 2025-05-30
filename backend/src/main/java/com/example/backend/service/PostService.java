@@ -8,8 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface PostService {
-    List<PostDTO> getNewestPost();
-    List<PostDTO> getPostsByUser(long userId);
+    List<PostDTO> getNewestPost(int pageNumber);
+    List<PostDTO> getPostsByUserId(long userId, int pageNumber);
     PostDTO createPost(List<MultipartFile> files, PostCreate data, MultipartFile file);
     String deletePost(long postId);
     String changePostRecipientStatus(long postId, boolean status);

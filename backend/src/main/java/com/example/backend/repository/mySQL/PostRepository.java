@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findByUser_Id(long userId);
+    List<Post> findByWallId(long wallId);
     List<Post> findByPrivacy(PostPrivacy privacy);
 
     List<Post> findByUser(User sender);

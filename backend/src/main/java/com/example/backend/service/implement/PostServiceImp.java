@@ -17,6 +17,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,17 +55,19 @@ public class PostServiceImp implements PostService {
     private FilterRepository filterRepo;
 
     @Override
-    public List<PostDTO> getNewestPost() {
+    public List<PostDTO> getNewestPost(int pageNumber) {
         User user = userService.getCurrentUser();
-        return convertPostsToDTO(filterRepo.getPosts(user.getId()));
+        return convertPostsToDTO(filterRepo.getPosts(user.getId(), pageNumber));
     }
 
     @Override
-    public List<PostDTO> getPostsByUser(long userId) {
+    public List<PostDTO> getPostsByUserId(long userId, int pageNumber) {
         User user = userService.getCurrentUser();
-        return convertPostsToDTO(postRecipientRepo.findByRecipientAndSender(user, userRepo.findById(userId))
+        Pageable pageable = PageRequest.of(pageNumber - 1, 6);
+        return convertPostsToDTO(postRecipientRepo.findByRecipientIdAndSenderId(user.getId(), userId, pageable)
                 .stream()
                 .map(PostRecipient::getPost)
+                .filter(post -> post.getWallId() == userId)
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .toList());
     }
@@ -79,6 +82,7 @@ public class PostServiceImp implements PostService {
             post.setContent(data.getContent());
             post.setUser(currentUser);
             post.setCreatedAt(LocalDateTime.now());
+            post.setWallId(data.getWallId());
             Post tmp = postRepo.save(post);
             if(file != null) post.setBackgroundUrl(mediaService.uploadPostBackground(file, tmp.getId()));
             postRepo.save(tmp);
@@ -200,8 +204,8 @@ public class PostServiceImp implements PostService {
             postDTO.setParentPost(null);
         }
         postDTO.setReactionSummary(ReactionSummary.builder()
-                .emotions(reactionRepo.getEmotionsByPost(post))
-                .total(reactionRepo.countReactionsByPost(post))
+                .emotions(reactionRepo.getEmotionsByPostId(post.getId()))
+                .total(reactionRepo.countReactionsByPostId(post.getId()))
                 .build());
         Reaction reaction = reactionRepo.findByUserAndPost(userService.getCurrentUser(), post);
         if(reaction != null) postDTO.setCurrentUserReaction(modelMapper.map(reactionRepo.findByUserAndPost(userService.getCurrentUser(), post), ReactionDTO.class));

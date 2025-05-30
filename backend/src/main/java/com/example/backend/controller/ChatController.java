@@ -36,6 +36,6 @@ public class ChatController {
     @MessageMapping("/privateNotice")
     public void sendPrivateNotice(@Payload NoticeMessageDTO notice){
         notice.setType(MessageType.PRIVATE_NOTICE);
-        messagingTemplate.convertAndSendToUser(String.valueOf(notice.getRecipientId()), "/queue/notices", notice);
+        messagingTemplate.convertAndSendToUser(String.valueOf(notice.getRecipientId()), "/queue/chatNotices", notice);
     }
 }
