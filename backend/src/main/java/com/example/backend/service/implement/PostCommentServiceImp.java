@@ -50,6 +50,7 @@ public class PostCommentServiceImp implements PostCommentService {
                 .map(comment -> {
                     CommentDTO commentDTO = modelMapper.map(comment, CommentDTO.class);
                     commentDTO.setUserSummary(modelMapper.map(comment.getUser(), UserSummary.class));
+                    commentDTO.setCommentedAt(format.formatTimeAgo(comment.getCommentedAt()));
                     commentDTO.setReactionSummary(ReactionSummary.builder()
                             .emotions(reactionRepo.getEmotionsByPostComment(comment))
                             .total(reactionRepo.countReactionsByPostComment(comment))
@@ -63,7 +64,7 @@ public class PostCommentServiceImp implements PostCommentService {
     @Override
     public List<CommentDTO> getComments(long postId) {
         User currentUser = userService.getCurrentUser();
-        return postCommentRepo.findByPost_Id(postId)
+        return postCommentRepo.findByPost_IdOrderByCommentedAtDesc(postId)
                 .stream()
                 .filter(comment -> comment.getParent() == null)
                 .map(comment -> {

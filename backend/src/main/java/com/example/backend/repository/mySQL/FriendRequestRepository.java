@@ -19,7 +19,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Fr
     where (fr.user1.id = :user1Id and fr.user2.id = :user2Id)
     or (fr.user2.id = :user1Id and fr.user1.id = :user2Id)
 """)
-    FriendRequest findExistRequestByUser1IdAndUser2Id(@Param("user1Id") long user1Id, @Param("user2Id") long user2Id);
+    Optional<FriendRequest> findExistRequestByUser1IdAndUser2Id(@Param("user1Id") long user1Id, @Param("user2Id") long user2Id);
 
     @Query("""
     select fr from FriendRequest fr

@@ -93,20 +93,7 @@ public class PostServiceImp implements PostService {
                     return null;
                 }
             }
-            List<User> recipients = new ArrayList<>();
-            if(postPrivacy.equals(PostPrivacy.PUBLIC)){
-                recipients = userRepo.findAll();
-            }else if (postPrivacy.equals(PostPrivacy.PRIVATE)){
-                recipients = friendshipRepo.findFriendsByUser(currentUser.getId(), Pageable.unpaged(), "");
-            }
-            List<PostRecipient> allRecipients = new ArrayList<>(recipients.stream()
-                    .map(recipient -> {
-                        PostRecipient postRecipient = new PostRecipient(tmp, recipient, currentUser);
-                        return postRecipient;
-                    })
-                    .toList());
-            allRecipients.add(new PostRecipient(post, currentUser, currentUser));
-            postRecipientRepo.saveAll(allRecipients);
+            distributePost(postPrivacy, tmp, currentUser);
             Notification notification = new Notification();
             notification.setPost(tmp);
             notification.setType(NotificationType.POST);
@@ -132,11 +119,20 @@ public class PostServiceImp implements PostService {
         User currentUser = userService.getCurrentUser();
         Post parentPost = postRepo.findById(postId).orElse(null);
         Post currentPost = new Post();
+        PostPrivacy postPrivacy = PostPrivacy.valueOf(privacy);
+        currentPost.setWallId(currentUser.getId());
         currentPost.setContent(content);
         currentPost.setUser(currentUser);
         currentPost.setParent(parentPost);
-        currentPost.setPrivacy(PostPrivacy.valueOf(privacy));
-        return null;
+        currentPost.setPrivacy(postPrivacy);
+        currentPost.setCreatedAt(LocalDateTime.now());
+        currentPost = postRepo.save(currentPost);
+        distributePost(postPrivacy, currentPost, currentUser);
+        Notification notification = new Notification();
+        notification.setPost(currentPost);
+        notification.setType(NotificationType.POST);
+        notificationService.sendNotificationToFriends(notification, currentUser, "Đã chia sẻ một bài viết ");
+        return convertPostToDTO(currentPost);
     }
 
     @Override
@@ -168,6 +164,22 @@ public class PostServiceImp implements PostService {
         return "Deleted post successfully";
     }
 
+    private void distributePost(PostPrivacy postPrivacy, Post post, User currentUser){
+        List<User> recipients = new ArrayList<>();
+        if(postPrivacy.equals(PostPrivacy.PUBLIC)){
+            recipients = userRepo.findAll();
+        }else if (postPrivacy.equals(PostPrivacy.PRIVATE)){
+            recipients = friendshipRepo.findFriendsByUser(currentUser.getId(), Pageable.unpaged(), "");
+        }
+        List<PostRecipient> allRecipients = new ArrayList<>(recipients.stream()
+                .map(recipient -> {
+                    PostRecipient postRecipient = new PostRecipient(post, recipient, currentUser);
+                    return postRecipient;
+                })
+                .toList());
+        allRecipients.add(new PostRecipient(post, currentUser, currentUser));
+        postRecipientRepo.saveAll(allRecipients);
+    }
 
     private List<PostDTO> convertPostsToDTO(List<Post> posts) {
         return posts
@@ -194,7 +206,9 @@ public class PostServiceImp implements PostService {
                 .toList());
         postDTO.setUserSummary(userSummary);
         if(post.getParent() != null){
+            System.out.println("SDFDSFDSF" + post.getParent().getId());
             SharedPost sharedPost = modelMapper.map(post.getParent(), SharedPost.class);
+            sharedPost.setUserSummary(modelMapper.map(post.getParent().getUser(), UserSummary.class));
             sharedPost.setMediaList(postMediaRepo.findByPostId(post.getParent().getId())
                     .stream()
                     .map(media -> modelMapper.map(media, PostMediaDTO.class))

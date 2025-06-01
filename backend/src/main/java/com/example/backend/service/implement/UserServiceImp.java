@@ -108,16 +108,6 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public String changeInformation(ChangeInformationRequest request) {
-        User user = getCurrentUser();
-        user.setBio(request.getBio());
-        user.setEmail(request.getEmail());
-        user.setUsername(request.getUsername());
-        userRepo.save(user);
-        return "Information Changed!";
-    }
-
-    @Override
     public String changeBio(String bio) {
         User currentUser = getCurrentUser();
         currentUser.setBio(bio);

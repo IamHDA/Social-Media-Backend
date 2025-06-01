@@ -16,10 +16,6 @@ public class PostMediaDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime uploadAt;
 
-//    public Instant getUploadAtInstant() {
-//        return uploadAt.atZone(ZoneId.systemDefault()).toInstant();
-//    }
-
     public void setUploadAtInstant(Instant instant) {
         this.uploadAt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }

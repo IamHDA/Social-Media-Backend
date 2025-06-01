@@ -41,8 +41,8 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<UserSummary>> searchUser(@RequestParam String username){
-        return ResponseEntity.ok(userService.searchUser(username));
+    public ResponseEntity<List<UserSummary>> searchUser(@RequestParam String keyword){
+        return ResponseEntity.ok(userService.searchUser(keyword));
     }
 
     @Parameter(

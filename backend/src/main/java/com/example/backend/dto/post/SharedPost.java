@@ -17,5 +17,5 @@ public class SharedPost {
     @JsonFormat(pattern = "HH:mm dd/MM/yyyy")
     private LocalDateTime updatedAt;
     private List<PostMediaDTO> mediaList;
-    private UserSummary user;
+    private UserSummary userSummary;
 }

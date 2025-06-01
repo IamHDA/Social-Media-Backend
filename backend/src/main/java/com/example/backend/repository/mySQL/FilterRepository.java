@@ -5,6 +5,7 @@ import com.example.backend.entity.mySQL.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -76,9 +77,9 @@ public class FilterRepository {
         Root<PostRecipient> root = query.from(PostRecipient.class);
         Join<PostRecipient, Post> postJoin = root.join("post");
         Join<PostRecipient, User> recipientJoin = root.join("recipient");
-
         Subquery<Long> friendSubquery = query.subquery(Long.class);
         Root<Friendship> friendshipRoot = friendSubquery.from(Friendship.class);
+
         friendSubquery.select(cb.literal(1L))
                 .where(cb.or(
                         cb.and(
@@ -118,7 +119,9 @@ public class FilterRepository {
                 .toList();
         postRecipientRepo.saveAll(results);
 
-        return results.stream().map(PostRecipient::getPost).toList();
+        return results.stream()
+                .map(PostRecipient::getPost)
+                .toList();
     }
 
     public List<Notification> findNotificationByUserSortByNoticeTime(User user, int pageNumber, int pageSize){

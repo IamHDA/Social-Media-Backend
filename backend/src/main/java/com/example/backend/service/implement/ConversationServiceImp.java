@@ -167,11 +167,10 @@ public class ConversationServiceImp implements ConversationService {
     public String getConversationIdByRecipientId(long recipientId) {
         User currentUser = userService.getCurrentUser();
         Conversation conversation = conversationRepo.findByTypeAndParticipantIds(ConversationType.PRIVATE, List.of(currentUser.getId(), recipientId));
-        System.out.println("Tai vi sao cam xuc kia quay ve?" + conversation);
         if(conversation == null){
             CreateConversationRequest request = new CreateConversationRequest();
             request.setCreatorId(currentUser.getId());
-            request.setParticipantIds(List.of(recipientId));
+            request.setParticipantIds(new ArrayList<>(List.of(recipientId)));
             request.setType("PRIVATE");
             return createConversation(request, null).getId();
         }

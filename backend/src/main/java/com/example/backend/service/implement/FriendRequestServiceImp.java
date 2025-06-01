@@ -44,10 +44,8 @@ public class FriendRequestServiceImp implements FriendRequestService {
     @Override
     public FriendRequestDTO getFriendRequest(long opponentId){
         User currentUser = userService.getCurrentUser();
-        FriendRequest friendRequest = friendRequestRepo.findExistRequestByUser1IdAndUser2Id(currentUser.getId(), opponentId);
-        if(friendRequest == null){
-            return null;
-        }
+        FriendRequest friendRequest = friendRequestRepo.findExistRequestByUser1IdAndUser2Id(currentUser.getId(), opponentId).orElse(null);
+        if(friendRequest == null) return null;
         return FriendRequestDTO.builder()
                 .senderId(friendRequest.getUser1().getId())
                 .recipientId(friendRequest.getUser2().getId())
