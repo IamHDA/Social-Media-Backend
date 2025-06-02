@@ -3,6 +3,8 @@ package com.example.backend.controller;
 import com.example.backend.dto.ChangeInformationRequest;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.UserProfile;
+import com.example.backend.dto.post.PostMediaDTO;
+import com.example.backend.service.MediaService;
 import com.example.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,6 +31,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private MediaService mediaService;
 
     @GetMapping("/profile/{id}")
     public ResponseEntity<UserProfile> getUser(@PathVariable long id) {
@@ -43,6 +47,11 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<List<UserSummary>> searchUser(@RequestParam String keyword){
         return ResponseEntity.ok(userService.searchUser(keyword));
+    }
+
+    @GetMapping("/image/{userId}")
+    public ResponseEntity<List<PostMediaDTO>> getUserImage(@PathVariable long userId, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sort){
+        return ResponseEntity.ok(userService.getPostMedia(userId, pageSize, pageNumber, sort));
     }
 
     @Parameter(
@@ -66,17 +75,5 @@ public class UserController {
     @PutMapping("/profile/update/bio")
     public ResponseEntity<String> changeBio(@RequestBody Map<String, String> body){
         return ResponseEntity.ok(userService.changeBio(body.get("bio")));
-    }
-
-    @MessageMapping("/user.disconnect")
-    @SendTo("/topic/public")
-    public String onDisconnect(@Payload long userId){
-        return "disconnected " + userId;
-    }
-
-    @MessageMapping("/user.connect")
-    @SendTo("/topic/public")
-    public String onConnect(@Payload long userId){
-        return "connected " + userId;
     }
 }

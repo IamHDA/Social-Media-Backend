@@ -2,7 +2,6 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.FileType;
 import com.example.backend.Enum.UserStatus;
-import com.example.backend.dto.ChangeInformationRequest;
 import com.example.backend.dto.UserSummary;
 import com.example.backend.dto.UserProfile;
 import com.example.backend.dto.post.PostMediaDTO;
@@ -18,6 +17,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -51,12 +52,22 @@ public class UserServiceImp implements UserService {
                 .map(friend -> modelMapper.map(friend, UserSummary.class))
                 .toList());
         userProfile.setNumberOfFriends(friendshipRepo.countByUserId(id));
-        Pageable pageable = PageRequest.of(0, 9);
-        userProfile.setPostedImages(postMediaRepo.findByUserIdAndFileTypeOrderByUploadAtDesc(user.getId(), FileType.IMAGE, pageable)
+        Pageable pageable = PageRequest.of(0, 9, Sort.by(Sort.Direction.DESC, "uploadAt"));
+        userProfile.setPostedImages(postMediaRepo.findByUserIdAndFileType(user.getId(), FileType.IMAGE, pageable)
                 .stream()
                 .map(image -> modelMapper.map(image, PostMediaDTO.class))
                 .toList());
         return userProfile;
+    }
+
+    @Override
+    public List<PostMediaDTO> getPostMedia(long userId, int pageSize, int pageNumber, String sortCondition){
+        Sort sort = Sort.by(sortCondition.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, "uploadAt");
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        return postMediaRepo.findByUserIdAndFileType(userId, FileType.IMAGE, pageable)
+                .stream()
+                .map(image -> modelMapper.map(image, PostMediaDTO.class))
+                .toList();
     }
 
     @Override
